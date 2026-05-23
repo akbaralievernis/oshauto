@@ -168,3 +168,43 @@ export const MOCK_VEHICLES: VehicleLocation[] = [
     route_short_name: '124'
   }
 ];
+
+export interface PromoPin {
+  id: string;
+  business_name: string;
+  description: string;
+  coupon_code: string;
+  category: 'coffee' | 'copy' | 'store';
+  latitude: number;
+  longitude: number;
+}
+
+export const MOCK_PROMO_PINS: PromoPin[] = [
+  {
+    id: 'p1',
+    business_name: 'Кофейня "Sierra Coffee Osh"',
+    description: 'Бодрящий свежеобжаренный кофе прямо у остановки "Араванская". Скидка 15% на любой латте по промокоду!',
+    coupon_code: 'OSHAUTO15',
+    category: 'coffee',
+    latitude: 40.5220,
+    longitude: 72.7988
+  },
+  {
+    id: 'p2',
+    business_name: 'Копицентр "БыстроПринт"',
+    description: 'Быстрая печать, ксерокопия и сканирование документов рядом с остановкой "Кыргызтелеком". Скидка 10% на все услуги.',
+    coupon_code: 'FASTPRINT10',
+    category: 'copy',
+    latitude: 40.5408,
+    longitude: 72.7981
+  },
+  {
+    id: 'p3',
+    business_name: 'Эко-Маркет "Ак-Тилек"',
+    description: 'Свежие фрукты и экологические продукты у конечной остановки "Ак-Тилек". Получите бесплатный сок при покупке от 500 сомов.',
+    coupon_code: 'FRESHJUICE',
+    category: 'store',
+    latitude: 40.5052,
+    longitude: 72.8122
+  }
+];

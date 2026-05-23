@@ -1,8 +1,8 @@
 'use client';
 
 import React, { useEffect, useRef, useState } from 'react';
-import { Route, Stop, VehicleLocation } from '@/lib/supabase';
-import { Bus, MapPin, Navigation } from 'lucide-react';
+import { Route, Stop, VehicleLocation, MOCK_PROMO_PINS, PromoPin } from '@/lib/supabase';
+import { Bus, MapPin, Navigation, Sparkles } from 'lucide-react';
 
 interface MapContainerProps {
   selectedRoute: Route | null;
@@ -11,6 +11,9 @@ interface MapContainerProps {
   onSelectStop?: (stop: Stop) => void;
   activeAlarmStopId?: string | null;
 }
+
+// Помощник линейной интерполяции (Linear Interpolation)
+const lerp = (start: number, end: number, amt: number) => (1 - amt) * start + amt * end;
 
 export function MapContainer({
   selectedRoute,
@@ -23,29 +26,32 @@ export function MapContainer({
   const [mapType, setMapType] = useState<'mapbox' | 'leaflet' | 'none'>('none');
   const [isClient, setIsClient] = useState(false);
   
-  // Хранилища для инстансов карт
+  // Хранилища для инстансов и слоев
   const mapboxMapRef = useRef<any>(null);
   const leafletMapRef = useRef<any>(null);
-  const leafletMarkersRef = useRef<any[]>([]);
+  
+  // Кэши маркеров для оптимизации и плавной анимации
+  const leafletStopsRef = useRef<any[]>([]);
+  const leafletPromoPinsRef = useRef<any[]>([]);
+  const leafletVehiclesRef = useRef<Record<string, { marker: any; lat: number; lon: number }>>({});
   const leafletPolylineRef = useRef<any>(null);
 
-  // Координаты центра Оша
+  // Координаты центра города Ош (Кыргызстан)
   const OSH_CENTER = { lat: 40.5215, lon: 72.7981 };
 
   useEffect(() => {
     setIsClient(true);
   }, []);
 
-  // Инициализация картографического провайдера
+  // Инициализация картографического провайдера (Mapbox vs Leaflet)
   useEffect(() => {
     if (!isClient || !mapContainerRef.current) return;
 
     const mapboxToken = process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN;
 
-    // Решаем, какой провайдер использовать (Mapbox vs Leaflet)
     if (mapboxToken) {
       // -------------------------------------------------------------
-      // СЦЕНАРИЙ 1: ИНИЦИАЛИЗАЦИЯ MAPBOX GL JS
+      // МЕТОД 1: ИНИЦИАЛИЗАЦИЯ MAPBOX GL JS
       // -------------------------------------------------------------
       import('mapbox-gl').then((mapboxglModule) => {
         const mapboxgl = mapboxglModule.default;
@@ -55,10 +61,10 @@ export function MapContainer({
 
         const map = new mapboxgl.Map({
           container: mapContainerRef.current!,
-          style: 'mapbox://styles/mapbox/navigation-night-v1', // Темная премиум-карта
+          style: 'mapbox://styles/mapbox/navigation-night-v1', // Ночная премиум тема
           center: [OSH_CENTER.lon, OSH_CENTER.lat],
           zoom: 12.5,
-          pitch: 45 // 3D-наклон
+          pitch: 45 // 3D наклон
         });
 
         map.addControl(new mapboxgl.NavigationControl(), 'top-right');
@@ -70,7 +76,7 @@ export function MapContainer({
       });
     } else {
       // -------------------------------------------------------------
-      // СЦЕНАРИЙ 2: ИНИЦИАЛИЗАЦИЯ LEAFLET.JS (Полный оффлайн/бесплатный режим)
+      // МЕТОД 2: ИНИЦИАЛИЗАЦИЯ LEAFLET.JS (Полный оффлайн-режим)
       // -------------------------------------------------------------
       initLeaflet();
     }
@@ -80,10 +86,9 @@ export function MapContainer({
 
       import('leaflet').then((LModule) => {
         const L = LModule.default;
-        // Подключаем стили оффлайн-карты Leaflet
         import('leaflet/dist/leaflet.css' as any);
 
-        // Фикс иконок по умолчанию в Leaflet
+        // Исправление дефолтных путей к картинкам маркеров Leaflet
         delete (L.Icon.Default.prototype as any)._getIconUrl;
         L.Icon.Default.mergeOptions({
           iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png',
@@ -96,9 +101,9 @@ export function MapContainer({
           13
         );
 
-        // Используем темные тайлы CartoDB для сохранения премиум-эстетики
+        // Используем темные премиум тайлы CartoDB Dark Matter
         L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
-          attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
+          attribution: '&copy; OpenStreetMap contributors &copy; CARTO',
           subdomains: 'abcd',
           maxZoom: 20
         }).addTo(map);
@@ -109,7 +114,7 @@ export function MapContainer({
     }
 
     return () => {
-      // Очистка при размонтировании
+      // Очистка памяти при unmount
       if (mapboxMapRef.current) {
         mapboxMapRef.current.remove();
         mapboxMapRef.current = null;
@@ -122,7 +127,7 @@ export function MapContainer({
   }, [isClient]);
 
   // -------------------------------------------------------------
-  // ОТРИСОВКА МАРШРУТОВ И МАРКЕРОВ В LEAFLET
+  // ОТРИСОВКА И АНИМАЦИЯ НА LEAFLET КАРТЕ
   // -------------------------------------------------------------
   useEffect(() => {
     if (mapType !== 'leaflet' || !leafletMapRef.current) return;
@@ -131,16 +136,19 @@ export function MapContainer({
       const L = LModule.default;
       const map = leafletMapRef.current;
 
-      // Очищаем старые маркеры остановок и транспорта
-      leafletMarkersRef.current.forEach((marker) => marker.remove());
-      leafletMarkersRef.current = [];
+      // 1. Очищаем старые маркеры остановок и B2B пинов (транспорт анимируем отдельно)
+      leafletStopsRef.current.forEach((marker) => marker.remove());
+      leafletStopsRef.current = [];
+
+      leafletPromoPinsRef.current.forEach((marker) => marker.remove());
+      leafletPromoPinsRef.current = [];
 
       if (leafletPolylineRef.current) {
         leafletPolylineRef.current.remove();
         leafletPolylineRef.current = null;
       }
 
-      // 1. Рисуем полилинию маршрута
+      // 2. Рисуем траекторию пути
       if (stops.length > 1) {
         const latLngs = stops.map((s) => [s.stop_lat, s.stop_lon] as [number, number]);
         const polylineColor = selectedRoute ? `#${selectedRoute.route_color}` : '#3b82f6';
@@ -149,18 +157,17 @@ export function MapContainer({
           color: polylineColor,
           weight: 5,
           opacity: 0.85,
-          dashArray: '2, 8' // красивый пунктирный эффект
+          dashArray: '2, 8'
         }).addTo(map);
 
         leafletPolylineRef.current = polyline;
 
-        // Автоматически зумируем карту на весь маршрут
+        // Зум по размеру всего пути
         map.fitBounds(polyline.getBounds(), { padding: [40, 40] });
       }
 
-      // 2. Ставим маркеры остановок
+      // 3. Добавление маркеров остановок
       stops.forEach((stop) => {
-        // Кастомная HTML-иконка для остановок
         const isAlarmSet = activeAlarmStopId === stop.stop_id;
         const iconColor = selectedRoute ? `#${selectedRoute.route_color}` : '#3b82f6';
         
@@ -182,20 +189,80 @@ export function MapContainer({
           .addTo(map)
           .bindPopup(`<b>${stop.stop_name}</b><br/>Координаты: ${stop.stop_lat.toFixed(5)}, ${stop.stop_lon.toFixed(5)}`);
 
-        // Клик по маркеру
         if (onSelectStop) {
           stopMarker.on('click', () => onSelectStop(stop));
         }
 
-        leafletMarkersRef.current.push(stopMarker);
+        leafletStopsRef.current.push(stopMarker);
       });
 
-      // 3. Ставим маркеры транспорта в реальном времени
+      // 4. Отрисовка B2B светящихся промо-пинов с купонами
+      MOCK_PROMO_PINS.forEach((pin) => {
+        let pinIconHtml = '';
+        
+        if (pin.category === 'coffee') {
+          pinIconHtml = `
+            <div class="relative flex items-center justify-center w-9 h-9 rounded-full border-2 border-amber-500 bg-[#1c120c] shadow-[0_0_15px_rgba(245,158,11,0.5)] cursor-pointer">
+              <span class="absolute inset-0 rounded-full border-2 border-amber-500 animate-ping opacity-40" style="animation-duration: 2s;"></span>
+              ☕
+            </div>
+          `;
+        } else if (pin.category === 'copy') {
+          pinIconHtml = `
+            <div class="relative flex items-center justify-center w-9 h-9 rounded-full border-2 border-indigo-500 bg-[#0d1224] shadow-[0_0_15px_rgba(99,102,241,0.5)] cursor-pointer">
+              <span class="absolute inset-0 rounded-full border-2 border-indigo-500 animate-ping opacity-40" style="animation-duration: 2.2s;"></span>
+              📄
+            </div>
+          `;
+        } else {
+          pinIconHtml = `
+            <div class="relative flex items-center justify-center w-9 h-9 rounded-full border-2 border-purple-500 bg-[#180d24] shadow-[0_0_15px_rgba(168,85,247,0.5)] cursor-pointer">
+              <span class="absolute inset-0 rounded-full border-2 border-purple-500 animate-ping opacity-40" style="animation-duration: 1.8s;"></span>
+              🛒
+            </div>
+          `;
+        }
+
+        const promoIcon = L.divIcon({
+          html: pinIconHtml,
+          className: 'custom-promo-div-icon',
+          iconSize: [36, 36],
+          iconAnchor: [18, 18]
+        });
+
+        const promoMarker = L.marker([pin.latitude, pin.longitude], { icon: promoIcon })
+          .addTo(map)
+          .bindPopup(`
+            <div style="font-family: var(--font-sans), sans-serif; padding: 4px; max-width: 200px;">
+              <div style="display: flex; align-items: center; gap: 4px; font-weight: 800; font-size: 13px; color: #f59e0b;">
+                <span style="font-size:12px;">🌟</span> ${pin.business_name}
+              </div>
+              <p style="font-size: 10px; color: #d1d5db; line-height: 1.35; margin: 4px 0 6px 0;">${pin.description}</p>
+              <div style="padding: 4px 8px; background: rgba(245,158,11,0.15); border: 1px dashed #f59e0b; border-radius: 6px; text-align: center; font-family: monospace; font-size: 11px; font-weight: 900; color: #fbbf24;">
+                Купон: ${pin.coupon_code}
+              </div>
+            </div>
+          `);
+
+        leafletPromoPinsRef.current.push(promoMarker);
+      });
+
+      // 5. Плавный трекинг транспорта и интерполяция координат (lerp)
+      const activeVehicleIds = new Set(vehicles.map((v) => v.vehicle_id));
+
+      // Удаляем маркеры уехавших машин
+      Object.keys(leafletVehiclesRef.current).forEach((id) => {
+        if (!activeVehicleIds.has(id)) {
+          leafletVehiclesRef.current[id].marker.remove();
+          delete leafletVehiclesRef.current[id];
+        }
+      });
+
+      // Отрисовка/анимация активных машин
       vehicles.forEach((v) => {
-        // Выбор цвета в зависимости от загруженности
-        let color = '#10b981'; // empty - Зеленый
-        if (v.congestion_status === 'normal') color = '#f59e0b'; // normal - Оранжевый
-        if (v.congestion_status === 'crowded') color = '#ef4444'; // crowded - Красный
+        let color = '#10b981'; // empty
+        if (v.congestion_status === 'normal') color = '#f59e0b';
+        if (v.congestion_status === 'crowded') color = '#ef4444';
 
         const isOutdoor = document.documentElement.getAttribute('data-theme') === 'outdoor';
         const markerBorder = isOutdoor ? 'border-3 border-black' : 'border-2 border-white';
@@ -214,9 +281,48 @@ export function MapContainer({
           iconAnchor: [18, 18]
         });
 
-        const vehicleMarker = L.marker([v.latitude, v.longitude], { icon: vehicleIcon })
-          .addTo(map)
-          .bindPopup(`
+        const cached = leafletVehiclesRef.current[v.vehicle_id];
+
+        if (cached) {
+          // Если маркер уже есть — плавно скользим (интерполируем lerp)
+          const marker = cached.marker;
+          marker.setIcon(vehicleIcon); // обновляем курс/цвет
+          
+          const startLat = cached.lat;
+          const startLon = cached.lon;
+          const endLat = v.latitude;
+          const endLon = v.longitude;
+
+          // Запуск плавной анимации скольжения маркера по дорогам
+          const duration = 2500; // время сглаживания в мс
+          const startTime = performance.now();
+
+          const animateStep = (timestamp: number) => {
+            const elapsed = timestamp - startTime;
+            const progress = Math.min(elapsed / duration, 1);
+            const easeProgress = progress * (2 - progress); // кривая easeOut
+
+            const currentLat = lerp(startLat, endLat, easeProgress);
+            const currentLon = lerp(startLon, endLon, easeProgress);
+
+            marker.setLatLng([currentLat, currentLon]);
+
+            if (progress < 1) {
+              requestAnimationFrame(animateStep);
+            }
+          };
+
+          requestAnimationFrame(animateStep);
+
+          // Обновляем координаты кэша
+          leafletVehiclesRef.current[v.vehicle_id] = {
+            marker,
+            lat: endLat,
+            lon: endLon
+          };
+
+          // Обновляем текст попапа
+          marker.getPopup().setContent(`
             <div style="font-family: sans-serif; padding: 4px 8px;">
               <b style="font-size: 14px;">Маршрутка №${v.route_short_name || '105'}</b><br/>
               <b>Загруженность:</b> ${v.congestion_status === 'empty' ? '🟢 Свободно' : v.congestion_status === 'normal' ? '🟡 Нормально' : '🔴 Толпа'}<br/>
@@ -224,24 +330,28 @@ export function MapContainer({
               <span style="font-size: 10px; color: #888;">Обновлено: ${new Date(v.last_updated).toLocaleTimeString()}</span>
             </div>
           `);
+        } else {
+          // Если это новая машина — создаем с нуля
+          const vehicleMarker = L.marker([v.latitude, v.longitude], { icon: vehicleIcon })
+            .addTo(map)
+            .bindPopup(`
+              <div style="font-family: sans-serif; padding: 4px 8px;">
+                <b style="font-size: 14px;">Маршрутка №${v.route_short_name || '105'}</b><br/>
+                <b>Загруженность:</b> ${v.congestion_status === 'empty' ? '🟢 Свободно' : v.congestion_status === 'normal' ? '🟡 Нормально' : '🔴 Толпа'}<br/>
+                <b>Скорость:</b> ${v.speed || 0} км/ч<br/>
+                <span style="font-size: 10px; color: #888;">Обновлено: ${new Date(v.last_updated).toLocaleTimeString()}</span>
+              </div>
+            `);
 
-        leafletMarkersRef.current.push(vehicleMarker);
+          leafletVehiclesRef.current[v.vehicle_id] = {
+            marker: vehicleMarker,
+            lat: v.latitude,
+            lon: v.longitude
+          };
+        }
       });
     });
   }, [mapType, stops, vehicles, selectedRoute, activeAlarmStopId]);
-
-  // -------------------------------------------------------------
-  // РИСОВАНИЕ В MAPBOX (СТРУКТУРНЫЙ ОФФЛАЙН/ЗАГЛУШКА)
-  // -------------------------------------------------------------
-  useEffect(() => {
-    if (mapType !== 'mapbox' || !mapboxMapRef.current) return;
-    const map = mapboxMapRef.current;
-
-    // В Mapbox маркеры рендерятся через GeoJSON слои или кастомные DOM-элементы.
-    // Для совместимости и простоты смены провайдеров мы сфокусировали основной
-    // графический функционал на Leaflet, который работает идеально без токена
-    // в любых условиях.
-  }, [mapType, stops, vehicles]);
 
   if (!isClient) return <div className="w-full h-full bg-[#0d0d12]" />;
 
@@ -249,14 +359,14 @@ export function MapContainer({
     <div className="w-full h-full relative">
       <div ref={mapContainerRef} className="w-full h-full absolute inset-0 z-0" />
       
-      {/* HUD статусная панель внизу карты */}
+      {/* HUD статусная панель карт */}
       <div className="absolute top-24 left-4 z-10 pointer-events-none flex flex-col gap-1.5">
         <div className="px-3 py-1.5 text-[10px] font-extrabold uppercase tracking-widest rounded-lg bg-[var(--bg-primary)] backdrop-blur-md border border-[var(--border-color)] text-[var(--text-secondary)] pointer-events-auto flex items-center gap-1.5 shadow-lg select-none">
           <span className="flex h-2.5 w-2.5 relative">
             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
             <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
           </span>
-          {mapType === 'mapbox' ? 'MAPBOX ENGINE' : 'LEAFLET + OSM ACTIVE'}
+          {mapType === 'mapbox' ? '🟢 MAPBOX 3D ENGINE' : '🔵 LEAFLET + OSM REALTIME'}
         </div>
       </div>
     </div>

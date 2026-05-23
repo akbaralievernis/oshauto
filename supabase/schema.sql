@@ -288,3 +288,72 @@ create policy "Enable read access for all users on stop events" on stop_events f
 -- Добавление записей разрешено системе и водителям (через гео-триггер при обновлении позиции)
 create policy "Enable insert access for authenticated users on stop events" on stop_events for insert
     with check (auth.role() = 'authenticated');
+
+-- 7. ДОПОЛНИТЕЛЬНЫЕ ТАБЛИЦЫ: B2B РЕКЛАМА И СЕМАНТИЧЕСКИЙ КЭШ
+-- ==========================================
+
+-- Таблица рекламных B2B пинов (promo_pins)
+create table promo_pins (
+    id bigserial primary key,
+    business_name text not null,
+    description text,
+    coupon_code text,
+    category text check (category in ('coffee', 'copy', 'store')) not null,
+    latitude double precision not null,
+    longitude double precision not null,
+    geom geometry(Point, 4326),
+    created_at timestamp with time zone default timezone('utc'::text, now()) not null
+);
+
+comment on table promo_pins is 'Таблица рекламных пинов местного бизнеса у остановок Оша';
+
+create index if not exists promo_pins_geom_idx on promo_pins using gist (geom);
+
+-- Триггер для автоматического заполнения geom при сохранении пина
+create trigger trg_promo_pins_geom
+before insert or update of latitude, longitude on promo_pins
+for each row execute function update_geom_from_latlon();
+
+-- Таблица семантического векторного кэша ИИ (semantic_search_cache)
+create table semantic_search_cache (
+    id bigserial primary key,
+    query text not null unique,               -- Уникальный текст запроса
+    answer text not null,                     -- Сгенерированный ответ ИИ без галлюцинаций
+    embedding vector(1536) not null,         -- Эмбеддинг текста запроса
+    created_at timestamp with time zone default timezone('utc'::text, now()) not null
+);
+
+comment on table semantic_search_cache is 'Таблица семантического кэширования для снижения расходов на OpenAI API';
+
+create index if not exists semantic_search_cache_embedding_idx on semantic_search_cache using hnsw (embedding vector_cosine_ops);
+
+-- RPC-функция для семантического сопоставления запросов
+create or replace function match_semantic_cache (
+    query_embedding vector(1536),
+    match_threshold float
+) returns table (
+    answer text,
+    similarity float
+) language sql stable as $$
+    select
+        ssc.answer,
+        1 - (ssc.embedding <=> query_embedding) as similarity
+    from semantic_search_cache ssc
+    where 1 - (ssc.embedding <=> query_embedding) > match_threshold
+    order by ssc.embedding <=> query_embedding
+    limit 1;
+$$;
+
+-- Включение RLS
+alter table promo_pins enable row level security;
+alter table semantic_search_cache enable row level security;
+
+-- Политики безопасности
+create policy "Enable read access for all users on promo pins" on promo_pins for select using (true);
+create policy "Enable full access for admins on promo pins" on promo_pins for all
+    using (auth.jwt() ->> 'role' = 'admin');
+
+create policy "Enable read access for all users on semantic cache" on semantic_search_cache for select using (true);
+create policy "Enable full access for admins on semantic cache" on semantic_search_cache for all
+    using (auth.jwt() ->> 'role' = 'admin');
+

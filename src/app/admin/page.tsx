@@ -109,6 +109,7 @@ export default function AdminPage() {
   const [operatingHours, setOperatingHours] = useState<string>('06:00 - 21:30');
 
   const [stops, setStops] = useState<Stop[]>([]);
+  const [routePath, setRoutePath] = useState<[number, number][]>([]);
   const [isSaving, setIsSaving] = useState<boolean>(false);
   const [isClient, setIsClient] = useState<boolean>(false);
 
@@ -126,9 +127,44 @@ export default function AdminPage() {
     })
   );
 
+  // Асинхронная привязка маршрута к реальным дорогам (Snap-to-road) через OSRM API
+  const fetchOSRMRoute = async (stopsList: Stop[]): Promise<[number, number][]> => {
+    if (stopsList.length < 2) return [];
+    
+    // OSRM ожидает формат lon,lat;lon,lat;...
+    const coordsString = stopsList.map((s) => `${s.stop_lon},${s.stop_lat}`).join(';');
+    const url = `https://router.project-osrm.org/route/v1/driving/${coordsString}?overview=full&geometries=geojson`;
+    
+    try {
+      const res = await fetch(url);
+      if (!res.ok) throw new Error('OSRM API Error');
+      const data = await res.json();
+      if (data.routes && data.routes[0]) {
+        // Конвертируем [lon, lat] от OSRM в [lat, lon] для Leaflet
+        const routeCoords = data.routes[0].geometry.coordinates.map(
+          (c: [number, number]) => [c[1], c[0]] as [number, number]
+        );
+        return routeCoords;
+      }
+    } catch (err) {
+      console.error('Ошибка OSRM маршрутизации, возвращаем прямой путь:', err);
+    }
+    // Фоллбэк: прямые линии между остановками
+    return stopsList.map((s) => [s.stop_lat, s.stop_lon] as [number, number]);
+  };
+
   useEffect(() => {
     setIsClient(true);
   }, []);
+
+  // Автоматический расчет траектории по дорогам при изменении остановок
+  useEffect(() => {
+    const updatePath = async () => {
+      const path = await fetchOSRMRoute(stops);
+      setRoutePath(path);
+    };
+    updatePath();
+  }, [stops]);
 
   // Инициализация Leaflet в админке
   useEffect(() => {
@@ -173,7 +209,7 @@ export default function AdminPage() {
     };
   }, [isClient, stops.length]);
 
-  // Обновление карты при изменении списка остановок
+  // Обновление карты при изменении списка остановок или траектории пути OSRM
   useEffect(() => {
     if (!leafletMapRef.current) return;
     const map = leafletMapRef.current;
@@ -212,21 +248,19 @@ export default function AdminPage() {
         markersRef.current.push(marker);
       });
 
-      // 2. Отрисовка пути (полилинии) между ними (Snap-to-road stub)
-      if (stops.length > 1) {
-        const coords = stops.map((s) => [s.stop_lat, s.stop_lon] as [number, number]);
-        
-        const polyline = L.polyline(coords, {
+      // 2. Отрисовка пути по реальной дорожной сети (Snap-to-road)
+      if (routePath.length > 0) {
+        const polyline = L.polyline(routePath, {
           color: `#${routeColor}`,
-          weight: 4,
-          opacity: 0.8,
-          dashArray: '5, 8'
+          weight: 4.5,
+          opacity: 0.85,
+          dashArray: '2, 8'
         }).addTo(map);
 
         polylineRef.current = polyline;
       }
     });
-  }, [stops, routeColor]);
+  }, [stops, routePath, routeColor]);
 
   // Обработка удаления остановки
   const handleRemoveStop = (id: string) => {

@@ -6,6 +6,8 @@ import { useGeofenceAlarm } from '@/hooks/useGeofenceAlarm';
 import { Users, Bell, BellRing, Sparkles, Navigation, Info } from 'lucide-react';
 import confetti from 'canvas-confetti';
 
+import { saveOfflineRating } from '@/lib/indexedDb';
+
 interface RouteCardProps {
   route: Route;
   stops: Stop[];
@@ -22,16 +24,35 @@ export function RouteCard({ route, stops, onSelectStop, onUpdateCongestion }: Ro
   const { isActive, currentDistance, startAlarm, stopAlarm } = useGeofenceAlarm();
 
   // Обработка кнопки оценки загруженности
-  const handleCongestionClick = (
+  const handleCongestionClick = async (
     status: 'empty' | 'normal' | 'crowded',
     e: React.MouseEvent<HTMLButtonElement>
   ) => {
     setCongestion(status);
-    if (onUpdateCongestion) {
-      onUpdateCongestion(status);
+
+    // Проверяем онлайн статус браузера пассажира
+    const isOnline = typeof window !== 'undefined' ? navigator.onLine : true;
+
+    if (isOnline) {
+      if (onUpdateCongestion) {
+        onUpdateCongestion(status);
+      }
+    } else {
+      // Сохраняем в оффлайн очередь IndexedDB
+      try {
+        await saveOfflineRating({
+          id: `rating_${Date.now()}`,
+          vehicle_id: 'v1', // Ссылка на головное ТС маршрута
+          congestion_status: status,
+          timestamp: new Date().toISOString()
+        });
+        alert('🌐 Вы оффлайн. Оценка сохранена в IndexedDB и будет отправлена при подключении к сети. Нам важен ваш вклад!');
+      } catch (err) {
+        console.error('Ошибка записи IndexedDB:', err);
+      }
     }
 
-    // Добавляем карму
+    // Начисляем карму локально
     setKarma((prev) => prev + 1);
 
     // Эффект конфетти на весь экран
@@ -42,7 +63,7 @@ export function RouteCard({ route, stops, onSelectStop, onUpdateCongestion }: Ro
       colors: ['#3b82f6', '#10b981', '#f59e0b', '#ef4444']
     });
 
-    // Добавляем летящую анимацию "+1 Карма" над кликнутой кнопкой
+    // Добавляем летящую анимацию "+1 Карма" над кнопкой
     const rect = e.currentTarget.getBoundingClientRect();
     const newFloat = {
       id: Date.now(),

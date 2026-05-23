@@ -6,14 +6,20 @@ import { BottomSheet } from '@/components/UI/BottomSheet';
 import { RouteCard } from '@/components/UI/RouteCard';
 import { SmartSearch } from '@/components/AIWidget/SmartSearch';
 import { useSupabaseRealtime } from '@/hooks/useSupabaseRealtime';
-import { MOCK_ROUTES, MOCK_STOPS, Route, Stop } from '@/lib/supabase';
+import { useStore } from '@/store/useStore';
+import { MOCK_ROUTES, MOCK_STOPS, Route } from '@/lib/supabase';
 import { Sun, SunMoon, Bus, ArrowLeft, ShieldAlert } from 'lucide-react';
 
 export default function Home() {
-  const [selectedRoute, setSelectedRoute] = useState<Route | null>(null);
-  const [stops, setStops] = useState<Stop[]>([]);
-  const [theme, setTheme] = useState<'dark' | 'outdoor'>('dark');
-  const [activeAlarmStopId, setActiveAlarmStopId] = useState<string | null>(null);
+  const {
+    selectedRoute,
+    setSelectedRoute,
+    stops,
+    setStops,
+    theme,
+    setTheme,
+    activeAlarmStopId
+  } = useStore();
 
   // Подписка на обновление геопозиций транспорта в реальном времени
   const { vehicles } = useSupabaseRealtime(
@@ -28,6 +34,52 @@ export default function Home() {
         .then((reg) => console.log('[PWA] Service Worker зарегистрирован:', reg.scope))
         .catch((err) => console.error('[PWA] Ошибка регистрации SW:', err));
     }
+  }, []);
+
+  // Автоматическая фоновая синхронизация IndexedDB при восстановлении интернета
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+
+    const handleOnline = async () => {
+      try {
+        const { getOfflineRatings, clearOfflineRatings } = await import('@/lib/indexedDb');
+        const offlineRatings = await getOfflineRatings();
+        
+        if (offlineRatings.length > 0) {
+          console.log(`[PWA Sync] Обнаружено ${offlineRatings.length} оффлайн-оценок. Выгружаем в базу...`);
+          
+          const { supabase, isClientConfigured } = await import('@/lib/supabase');
+          
+          for (const item of offlineRatings) {
+            if (isClientConfigured) {
+              await supabase
+                .from('vehicle_locations')
+                .update({ congestion_status: item.congestion_status })
+                .eq('vehicle_id', item.vehicle_id);
+            }
+          }
+          
+          // Очищаем оффлайн-буфер IndexedDB
+          await clearOfflineRatings();
+
+          // Оповещаем о начислении кармы
+          alert(`🌐 Связь восстановлена! Ваши оффлайн-отчеты (${offlineRatings.length} шт.) успешно синхронизированы. Вам начислено +${offlineRatings.length} баллов Карма! 🎉`);
+        }
+      } catch (err) {
+        console.error('Ошибка фоновой синхронизации PWA:', err);
+      }
+    };
+
+    window.addEventListener('online', handleOnline);
+    
+    // Проверяем буфер сразу при запуске, если уже онлайн
+    if (navigator.onLine) {
+      handleOnline();
+    }
+
+    return () => {
+      window.removeEventListener('online', handleOnline);
+    };
   }, []);
 
   // Синхронизация атрибута темы на теге HTML
@@ -49,7 +101,7 @@ export default function Home() {
 
   // Переключение темы (стандартная темная и высококонтрастный Outdoor Mode)
   const toggleTheme = () => {
-    setTheme((prev) => (prev === 'dark' ? 'outdoor' : 'dark'));
+    setTheme(theme === 'dark' ? 'outdoor' : 'dark');
   };
 
   // Фокусировка на маршруте по результатам ИИ-поиска
