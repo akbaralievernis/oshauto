@@ -4,7 +4,6 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import {
   Bus,
-  Map as MapIcon,
   Route as RouteIcon,
   Search,
   Clock,
@@ -13,13 +12,14 @@ import {
   MapPin,
   ArrowRight,
   CheckCircle2,
-  HelpCircle,
   Send,
   Phone,
   Mail,
   Bell,
   Users,
-  Loader2
+  Loader2,
+  Plus,
+  Map as MapIcon
 } from 'lucide-react';
 import { Route } from '@/lib/supabase';
 import { getAllRoutes } from '@/lib/customRoutes';
@@ -35,7 +35,6 @@ export default function HomePage() {
   const [openBuses, setOpenBuses] = useState<boolean>(false);
   const [openFaqId, setOpenFaqId] = useState<number | null>(null);
 
-  // Загрузка маршрутов с локального хранилища + мок
   useEffect(() => {
     setRoutes(getAllRoutes());
     const handler = () => setRoutes(getAllRoutes());
@@ -67,101 +66,113 @@ export default function HomePage() {
       <SiteHeader activePath="home" />
 
       {/* HERO */}
-      <section className="relative overflow-hidden">
-        <div className="absolute inset-0 -z-10">
-          <div className="absolute -top-40 -left-40 w-[480px] h-[480px] rounded-full bg-gradient-to-br from-blue-600/30 to-indigo-600/10 blur-3xl" />
-          <div className="absolute top-32 -right-40 w-[420px] h-[420px] rounded-full bg-gradient-to-br from-emerald-600/20 to-cyan-600/10 blur-3xl" />
+      <section className="relative overflow-hidden border-b border-[var(--border-color)]">
+        <div className="absolute inset-0 -z-10 pointer-events-none">
+          <div className="absolute top-[-15%] left-1/2 -translate-x-1/2 w-[800px] h-[800px] rounded-full bg-gradient-to-br from-blue-600/20 via-indigo-600/10 to-transparent blur-3xl" />
+          <div className="absolute bottom-[-20%] right-[-10%] w-[500px] h-[500px] rounded-full bg-emerald-500/10 blur-3xl" />
         </div>
 
-        <div className="max-w-6xl mx-auto px-5 pt-14 pb-12 md:pt-20 md:pb-16">
-          <div className="flex flex-col items-center text-center gap-6 max-w-3xl mx-auto">
-            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-[var(--border-color)] bg-[rgba(59,130,246,0.06)] text-xs font-bold text-[var(--accent-light)]">
+        <div className="mx-auto w-full max-w-6xl px-5 sm:px-8 pt-16 pb-14 md:pt-24 md:pb-20">
+          <div className="mx-auto max-w-3xl flex flex-col items-center text-center gap-6">
+            <span className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full border border-blue-500/30 bg-blue-500/10 text-xs font-semibold text-blue-300">
               <Sparkles className="w-3.5 h-3.5" />
               Транспорт Оша в реальном времени
-            </div>
-            <h1 className="text-4xl md:text-6xl font-black tracking-tight leading-[1.05]">
+            </span>
+
+            <h1 className="text-[2.25rem] sm:text-5xl md:text-6xl font-black tracking-tight leading-[1.05] text-balance">
               Доедь до места{' '}
               <span className="bg-gradient-to-r from-blue-400 via-indigo-400 to-emerald-400 bg-clip-text text-transparent">
                 быстро и без догадок
               </span>
             </h1>
+
             <p className="text-base md:text-lg text-[var(--text-secondary)] max-w-xl leading-relaxed">
-              Маршруты городских автобусов, остановки и движение транспорта Оша —
-              в одном удобном современном сервисе.
+              Маршруты городских автобусов, остановки и онлайн-карта города Ош —
+              в одном современном сервисе.
             </p>
 
             {/* SEARCH */}
-            <div className="w-full max-w-2xl">
-              <div className="flex items-center gap-2 p-2 rounded-2xl border border-[var(--border-color)] bg-[var(--bg-card)] backdrop-blur-xl shadow-2xl">
-                <Search className="w-5 h-5 ml-3 text-[var(--text-muted)] shrink-0" />
-                <input
-                  value={query}
-                  onChange={(e) => setQuery(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter') setOpenRoutes(true);
-                  }}
-                  placeholder="Например: 105, Сулейман-Тоо, Анар, Достук..."
-                  className="flex-1 bg-transparent border-0 outline-none text-sm md:text-base text-[var(--text-primary)] placeholder-[var(--text-muted)] py-3"
-                />
+            <div className="w-full max-w-2xl mt-2">
+              <form
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  setOpenRoutes(true);
+                }}
+                className="flex items-stretch gap-2 p-1.5 rounded-2xl border border-[var(--border-color)] bg-[var(--bg-card)] backdrop-blur-xl shadow-2xl shadow-black/40"
+              >
+                <div className="flex items-center flex-1 min-w-0 px-3">
+                  <Search className="w-5 h-5 text-[var(--text-muted)] shrink-0" />
+                  <input
+                    value={query}
+                    onChange={(e) => setQuery(e.target.value)}
+                    placeholder="Например: 105, Сулейман-Тоо, Анар..."
+                    className="w-full ml-2.5 bg-transparent border-0 outline-none text-sm md:text-base text-[var(--text-primary)] placeholder-[var(--text-muted)] py-3"
+                  />
+                </div>
                 <button
-                  onClick={() => setOpenRoutes(true)}
-                  className="px-4 md:px-5 py-3 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white text-sm font-bold flex items-center gap-2 transition-all shadow-lg shadow-blue-500/20 cursor-pointer shrink-0"
+                  type="submit"
+                  className="px-5 md:px-7 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white text-sm font-bold inline-flex items-center justify-center gap-2 transition-all shadow-lg shadow-blue-600/30 cursor-pointer shrink-0"
                 >
                   Найти
                   <ArrowRight className="w-4 h-4" />
                 </button>
-              </div>
+              </form>
+
               {query.trim() && (
-                <div className="mt-3 text-xs text-[var(--text-muted)]">
+                <div className="mt-2.5 text-xs text-[var(--text-muted)] text-center">
                   Найдено маршрутов:{' '}
-                  <b className="text-[var(--text-primary)]">{filteredRoutes.length}</b>. Нажмите «Найти» для просмотра.
+                  <b className="text-[var(--text-primary)]">{filteredRoutes.length}</b>
                 </div>
               )}
             </div>
 
             {/* QUICK STATS */}
-            <div className="grid grid-cols-3 gap-3 md:gap-6 w-full max-w-2xl mt-4">
+            <div className="grid grid-cols-3 gap-3 sm:gap-4 w-full max-w-xl mt-6">
               <Stat value={`${routes.length}+`} label="Маршрутов" />
               <Stat value="24/7" label="Доступно" />
               <Stat value="GPS" label="Реальное время" />
             </div>
           </div>
+        </div>
+      </section>
 
-          {/* TWO ACTION CARDS — Routes + Buses */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-12 max-w-4xl mx-auto">
-            <ActionCard
-              icon={<RouteIcon className="w-6 h-6" />}
-              tone="blue"
-              title="Маршруты"
-              description="Все городские маршруты, остановки и направления движения."
-              onClick={() => setOpenRoutes(true)}
-              cta="Открыть список"
-            />
-            <ActionCard
-              icon={<Bus className="w-6 h-6" />}
-              tone="emerald"
-              title="Автобусы"
-              description="Действующий парк, загруженность салонов и движение онлайн."
-              onClick={() => setOpenBuses(true)}
-              cta="Посмотреть"
-            />
-          </div>
+      {/* TWO ACTION CARDS */}
+      <section className="mx-auto w-full max-w-6xl px-5 sm:px-8 -mt-8 md:-mt-10 relative z-10">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-5">
+          <ActionCard
+            icon={<RouteIcon className="w-6 h-6" />}
+            tone="blue"
+            title="Маршруты"
+            description="Все городские маршруты, остановки и направления."
+            onClick={() => setOpenRoutes(true)}
+            cta="Открыть список"
+            badge={`${routes.length}`}
+          />
+          <ActionCard
+            icon={<Bus className="w-6 h-6" />}
+            tone="emerald"
+            title="Автобусы"
+            description="Парк, загруженность салонов и движение онлайн."
+            onClick={() => setOpenBuses(true)}
+            cta="Посмотреть"
+            badge="LIVE"
+          />
         </div>
       </section>
 
       {/* FEATURES */}
-      <section className="max-w-6xl mx-auto px-5 py-12 md:py-16 w-full">
+      <section className="mx-auto w-full max-w-6xl px-5 sm:px-8 py-16 md:py-24">
         <SectionHeading
           eyebrow="Возможности"
           title="Всё, что нужно пассажиру"
           subtitle="OshAuto объединяет карту, маршруты и удобные инструменты в одном месте."
         />
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mt-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mt-10">
           <FeatureCard
             icon={<MapIcon className="w-5 h-5" />}
             title="Живая карта"
-            text="Маршруты и остановки на интерактивной карте города с привязкой к дорогам."
+            text="Маршруты и остановки на интерактивной карте с привязкой к дорогам."
           />
           <FeatureCard
             icon={<Bell className="w-5 h-5" />}
@@ -181,32 +192,32 @@ export default function HomePage() {
           <FeatureCard
             icon={<ShieldCheck className="w-5 h-5" />}
             title="Безопасно"
-            text="Никаких регистраций, реклам и слежки. Только маршрут и поездка."
+            text="Никаких регистраций, рекламы и слежки — только маршрут и поездка."
           />
           <FeatureCard
             icon={<Sparkles className="w-5 h-5" />}
             title="Современный UI"
-            text="Стильный интерфейс, темная тема и поддержка мобильных устройств."
+            text="Стильный интерфейс, тёмная тема и полная поддержка мобильных устройств."
           />
         </div>
       </section>
 
       {/* TOP ROUTES PREVIEW */}
-      <section className="max-w-6xl mx-auto px-5 py-10 w-full">
+      <section className="mx-auto w-full max-w-6xl px-5 sm:px-8 pb-16 md:pb-20">
         <div className="flex items-end justify-between gap-4 mb-6">
           <div>
+            <div className="text-xs font-bold uppercase tracking-widest text-blue-400 mb-2">
+              Маршруты
+            </div>
             <h2 className="text-2xl md:text-3xl font-extrabold tracking-tight">
-              Популярные маршруты
+              Популярные направления
             </h2>
-            <p className="text-sm text-[var(--text-secondary)] mt-1">
-              Самые загруженные направления города Ош.
-            </p>
           </div>
           <button
             onClick={() => setOpenRoutes(true)}
-            className="hidden sm:inline-flex items-center gap-1.5 text-xs font-bold text-[var(--accent-light)] hover:text-[var(--accent)] cursor-pointer"
+            className="hidden sm:inline-flex items-center gap-1.5 text-sm font-semibold text-blue-400 hover:text-blue-300 cursor-pointer transition-colors"
           >
-            Все маршруты <ArrowRight className="w-3.5 h-3.5" />
+            Все маршруты <ArrowRight className="w-4 h-4" />
           </button>
         </div>
 
@@ -219,44 +230,55 @@ export default function HomePage() {
             />
           ))}
         </div>
+
+        <div className="sm:hidden mt-5">
+          <button
+            onClick={() => setOpenRoutes(true)}
+            className="w-full py-3 rounded-xl border border-[var(--border-color)] text-sm font-bold text-[var(--text-primary)] hover:bg-[rgba(255,255,255,0.04)] inline-flex items-center justify-center gap-2 cursor-pointer"
+          >
+            Все маршруты <ArrowRight className="w-4 h-4" />
+          </button>
+        </div>
       </section>
 
       {/* HOW IT WORKS */}
-      <section className="max-w-6xl mx-auto px-5 py-12 md:py-16 w-full" id="about">
-        <SectionHeading
-          eyebrow="Как пользоваться"
-          title="Три простых шага"
-          subtitle="От поиска маршрута до прибытия на остановку."
-        />
+      <section className="border-y border-[var(--border-color)] bg-[rgba(255,255,255,0.015)]">
+        <div className="mx-auto w-full max-w-6xl px-5 sm:px-8 py-16 md:py-24" id="about">
+          <SectionHeading
+            eyebrow="Как пользоваться"
+            title="Три простых шага"
+            subtitle="От поиска маршрута до прибытия на остановку."
+          />
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-8">
-          <StepCard
-            n={1}
-            title="Найдите маршрут"
-            text="Введите название остановки или номер автобуса в поиске."
-          />
-          <StepCard
-            n={2}
-            title="Посмотрите на карте"
-            text="Откройте маршрут и увидите все остановки и движение транспорта."
-          />
-          <StepCard
-            n={3}
-            title="Доберитесь без догадок"
-            text="Используйте гео-будильник, чтобы выйти именно там, где нужно."
-          />
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-10">
+            <StepCard
+              n={1}
+              title="Найдите маршрут"
+              text="Введите название остановки или номер автобуса в поиске."
+            />
+            <StepCard
+              n={2}
+              title="Откройте на карте"
+              text="Увидите все остановки и движение транспорта в реальном времени."
+            />
+            <StepCard
+              n={3}
+              title="Доберитесь без догадок"
+              text="Используйте гео-будильник, чтобы выйти именно там, где нужно."
+            />
+          </div>
         </div>
       </section>
 
       {/* FAQ */}
-      <section className="max-w-3xl mx-auto px-5 py-12 md:py-16 w-full" id="faq">
+      <section className="mx-auto w-full max-w-3xl px-5 sm:px-8 py-16 md:py-24" id="faq">
         <SectionHeading
           eyebrow="FAQ"
           title="Частые вопросы"
           subtitle="Кратко о том, как устроен сервис."
         />
 
-        <div className="flex flex-col gap-3 mt-8">
+        <div className="flex flex-col gap-3 mt-10">
           {FAQ.map((f, i) => (
             <FaqItem
               key={i}
@@ -270,15 +292,19 @@ export default function HomePage() {
       </section>
 
       {/* CONTACTS + FEEDBACK */}
-      <section className="max-w-6xl mx-auto px-5 py-12 md:py-16 w-full" id="contacts">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <div className="glass-panel p-6 md:p-8">
-            <h3 className="text-xl font-extrabold mb-2">Контакты</h3>
-            <p className="text-sm text-[var(--text-secondary)] mb-5">
-              Связаться с командой OshAuto можно по любому из каналов ниже.
-            </p>
+      <section
+        className="border-t border-[var(--border-color)] bg-[rgba(255,255,255,0.015)]"
+        id="contacts"
+      >
+        <div className="mx-auto w-full max-w-6xl px-5 sm:px-8 py-16 md:py-24">
+          <SectionHeading
+            eyebrow="Связаться"
+            title="Контакты и обратная связь"
+            subtitle="Заметили ошибку или хотите предложить улучшение? Напишите нам."
+          />
 
-            <div className="flex flex-col gap-3">
+          <div className="grid grid-cols-1 lg:grid-cols-5 gap-5 mt-10">
+            <div className="lg:col-span-2 flex flex-col gap-3">
               <ContactRow
                 icon={<MapPin className="w-4 h-4" />}
                 label="Адрес"
@@ -292,14 +318,24 @@ export default function HomePage() {
               />
               <ContactRow
                 icon={<Mail className="w-4 h-4" />}
-                label="Почта"
+                label="Электронная почта"
                 value="info@oshauto.kg"
                 href="mailto:info@oshauto.kg"
               />
+              <div className="p-4 rounded-2xl border border-blue-500/20 bg-blue-500/5">
+                <div className="text-xs font-bold uppercase tracking-widest text-blue-300 mb-2">
+                  Перевозчикам
+                </div>
+                <p className="text-xs text-[var(--text-secondary)] leading-relaxed">
+                  Если вы парк или водитель — подключите свои GPS-данные через админ-панель и появитесь на карте города.
+                </p>
+              </div>
+            </div>
+
+            <div className="lg:col-span-3">
+              <FeedbackForm />
             </div>
           </div>
-
-          <FeedbackForm />
         </div>
       </section>
 
@@ -320,7 +356,7 @@ export default function HomePage() {
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder="Поиск по номеру или направлению..."
-              className="w-full pl-9 pr-3 py-2.5 text-sm rounded-xl bg-[rgba(255,255,255,0.03)] border border-[var(--border-color)] outline-none focus:border-[var(--accent)]"
+              className="w-full pl-9 pr-3 py-2.5 text-sm rounded-xl bg-[rgba(255,255,255,0.03)] border border-[var(--border-color)] outline-none focus:border-blue-500"
             />
           </div>
 
@@ -367,9 +403,11 @@ export default function HomePage() {
 
 function Stat({ value, label }: { value: string; label: string }) {
   return (
-    <div className="flex flex-col items-center text-center p-3 md:p-4 rounded-xl border border-[var(--border-color)] bg-[var(--bg-card)] backdrop-blur-md">
-      <div className="text-xl md:text-2xl font-black text-[var(--text-primary)]">{value}</div>
-      <div className="text-[10px] md:text-xs uppercase tracking-widest text-[var(--text-muted)] font-bold mt-1">
+    <div className="flex flex-col items-center text-center px-3 py-4 rounded-xl border border-[var(--border-color)] bg-[var(--bg-card)] backdrop-blur-md">
+      <div className="text-xl sm:text-2xl font-black text-[var(--text-primary)] leading-none">
+        {value}
+      </div>
+      <div className="text-[10px] uppercase tracking-widest text-[var(--text-muted)] font-bold mt-2">
         {label}
       </div>
     </div>
@@ -382,7 +420,8 @@ function ActionCard({
   description,
   onClick,
   cta,
-  tone
+  tone,
+  badge
 }: {
   icon: React.ReactNode;
   title: string;
@@ -390,29 +429,41 @@ function ActionCard({
   onClick: () => void;
   cta: string;
   tone: 'blue' | 'emerald';
+  badge?: string;
 }) {
-  const toneClasses =
-    tone === 'blue'
-      ? 'from-blue-600/20 to-indigo-600/5 border-blue-500/20 hover:border-blue-500/40 text-blue-300'
-      : 'from-emerald-600/20 to-teal-600/5 border-emerald-500/20 hover:border-emerald-500/40 text-emerald-300';
+  const isBlue = tone === 'blue';
+  const cardBg = isBlue
+    ? 'from-blue-600/15 via-blue-600/5 to-indigo-600/10 border-blue-500/30 hover:border-blue-500/60'
+    : 'from-emerald-600/15 via-emerald-600/5 to-teal-600/10 border-emerald-500/30 hover:border-emerald-500/60';
+  const iconBg = isBlue ? 'bg-blue-500/15 text-blue-300' : 'bg-emerald-500/15 text-emerald-300';
+  const ctaColor = isBlue ? 'text-blue-300' : 'text-emerald-300';
 
   return (
     <button
       onClick={onClick}
-      className={`group text-left p-5 md:p-6 rounded-2xl border bg-gradient-to-br ${toneClasses} backdrop-blur-md transition-all cursor-pointer hover:scale-[1.01] active:scale-[0.99]`}
+      className={`group text-left p-5 md:p-6 rounded-2xl border bg-gradient-to-br ${cardBg} backdrop-blur-md transition-all cursor-pointer hover:-translate-y-0.5 active:translate-y-0 shadow-xl shadow-black/40`}
     >
-      <div className="flex items-start justify-between gap-3 mb-4">
-        <div className="w-11 h-11 rounded-xl flex items-center justify-center bg-[rgba(255,255,255,0.06)] border border-[var(--border-color)]">
+      <div className="flex items-start justify-between gap-3 mb-5">
+        <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${iconBg}`}>
           {icon}
         </div>
-        <ArrowRight className="w-5 h-5 opacity-50 group-hover:opacity-100 group-hover:translate-x-1 transition-all" />
+        {badge && (
+          <span
+            className={`px-2.5 py-1 rounded-full text-[10px] font-extrabold tracking-widest ${
+              isBlue ? 'bg-blue-500/15 text-blue-300' : 'bg-emerald-500/15 text-emerald-300'
+            }`}
+          >
+            {badge}
+          </span>
+        )}
       </div>
-      <h3 className="text-lg font-extrabold text-[var(--text-primary)]">{title}</h3>
-      <p className="text-sm text-[var(--text-secondary)] mt-1.5 leading-relaxed">
-        {description}
-      </p>
-      <div className="text-xs font-bold mt-4 uppercase tracking-wider opacity-80">
-        {cta}
+      <h3 className="text-xl font-extrabold text-[var(--text-primary)]">{title}</h3>
+      <p className="text-sm text-[var(--text-secondary)] mt-2 leading-relaxed">{description}</p>
+      <div
+        className={`flex items-center justify-between mt-5 pt-4 border-t border-[var(--border-color)] text-xs font-bold uppercase tracking-widest ${ctaColor}`}
+      >
+        <span>{cta}</span>
+        <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
       </div>
     </button>
   );
@@ -428,13 +479,15 @@ function SectionHeading({
   subtitle?: string;
 }) {
   return (
-    <div className="text-center max-w-xl mx-auto">
-      <div className="text-xs font-extrabold uppercase tracking-widest text-[var(--accent-light)] mb-2">
+    <div className="mx-auto max-w-2xl text-center">
+      <div className="text-xs font-bold uppercase tracking-widest text-blue-400 mb-3">
         {eyebrow}
       </div>
-      <h2 className="text-2xl md:text-4xl font-black tracking-tight">{title}</h2>
+      <h2 className="text-2xl md:text-4xl font-extrabold tracking-tight">{title}</h2>
       {subtitle && (
-        <p className="text-sm md:text-base text-[var(--text-secondary)] mt-3">{subtitle}</p>
+        <p className="text-sm md:text-base text-[var(--text-secondary)] mt-3 leading-relaxed">
+          {subtitle}
+        </p>
       )}
     </div>
   );
@@ -450,28 +503,22 @@ function FeatureCard({
   text: string;
 }) {
   return (
-    <div className="p-5 rounded-2xl border border-[var(--border-color)] bg-[var(--bg-card)] backdrop-blur-md hover:border-[var(--border-hover)] transition-all">
-      <div className="w-10 h-10 rounded-xl bg-[rgba(59,130,246,0.1)] text-[var(--accent-light)] flex items-center justify-center mb-3">
+    <div className="p-5 md:p-6 rounded-2xl border border-[var(--border-color)] bg-[var(--bg-card)] backdrop-blur-md hover:border-[var(--border-hover)] transition-all">
+      <div className="w-11 h-11 rounded-xl bg-blue-500/10 text-blue-300 flex items-center justify-center mb-4">
         {icon}
       </div>
       <h3 className="text-base font-bold text-[var(--text-primary)]">{title}</h3>
-      <p className="text-xs text-[var(--text-secondary)] mt-1.5 leading-relaxed">{text}</p>
+      <p className="text-sm text-[var(--text-secondary)] mt-2 leading-relaxed">{text}</p>
     </div>
   );
 }
 
-function RoutePreviewCard({
-  route,
-  onView
-}: {
-  route: Route;
-  onView: () => void;
-}) {
+function RoutePreviewCard({ route, onView }: { route: Route; onView: () => void }) {
   return (
-    <div className="p-4 rounded-2xl border border-[var(--border-color)] bg-[var(--bg-card)] hover:bg-[var(--bg-card-hover)] transition-all flex flex-col gap-3">
+    <div className="p-5 rounded-2xl border border-[var(--border-color)] bg-[var(--bg-card)] hover:bg-[var(--bg-card-hover)] hover:border-[var(--border-hover)] transition-all flex flex-col gap-4">
       <div className="flex items-center gap-3">
         <span
-          className="px-3 py-1.5 text-sm font-extrabold rounded-lg"
+          className="w-12 h-12 flex items-center justify-center text-base font-extrabold rounded-xl shrink-0"
           style={{
             backgroundColor: `#${route.route_color}`,
             color: `#${route.route_text_color}`
@@ -482,8 +529,8 @@ function RoutePreviewCard({
         <div className="flex-1 min-w-0">
           <div className="text-sm font-bold truncate">{route.route_long_name}</div>
           {route.route_desc && (
-            <div className="text-[10px] text-[var(--text-muted)] truncate">
-              {route.route_desc}
+            <div className="text-xs text-[var(--text-muted)] truncate mt-0.5">
+              {route.route_desc.split('•')[0].trim()}
             </div>
           )}
         </div>
@@ -491,10 +538,10 @@ function RoutePreviewCard({
 
       <button
         onClick={onView}
-        className="w-full py-2 rounded-lg border border-[var(--border-color)] text-xs font-bold hover:bg-[rgba(255,255,255,0.04)] flex items-center justify-center gap-1.5 cursor-pointer"
+        className="w-full py-2.5 rounded-xl border border-[var(--border-color)] text-sm font-semibold hover:bg-[rgba(59,130,246,0.08)] hover:border-blue-500/40 hover:text-blue-300 inline-flex items-center justify-center gap-2 cursor-pointer transition-all"
       >
         Открыть на карте
-        <ArrowRight className="w-3 h-3" />
+        <ArrowRight className="w-4 h-4" />
       </button>
     </div>
   );
@@ -502,12 +549,17 @@ function RoutePreviewCard({
 
 function StepCard({ n, title, text }: { n: number; title: string; text: string }) {
   return (
-    <div className="relative p-5 rounded-2xl border border-[var(--border-color)] bg-[var(--bg-card)]">
-      <div className="text-5xl font-black bg-gradient-to-br from-blue-500/40 to-indigo-500/0 bg-clip-text text-transparent">
+    <div className="relative p-6 rounded-2xl border border-[var(--border-color)] bg-[var(--bg-card)] backdrop-blur-md overflow-hidden">
+      <div className="absolute top-3 right-4 text-6xl font-black text-blue-500/10 select-none leading-none">
         0{n}
       </div>
-      <h3 className="text-base font-bold mt-1">{title}</h3>
-      <p className="text-xs text-[var(--text-secondary)] mt-1.5 leading-relaxed">{text}</p>
+      <div className="relative">
+        <div className="w-9 h-9 rounded-xl bg-blue-500/15 text-blue-300 flex items-center justify-center text-sm font-extrabold mb-3">
+          {n}
+        </div>
+        <h3 className="text-base font-bold">{title}</h3>
+        <p className="text-sm text-[var(--text-secondary)] mt-2 leading-relaxed">{text}</p>
+      </div>
     </div>
   );
 }
@@ -527,17 +579,21 @@ function FaqItem({
     <div className="rounded-2xl border border-[var(--border-color)] bg-[var(--bg-card)] overflow-hidden">
       <button
         onClick={onToggle}
-        className="w-full p-4 flex items-center justify-between gap-4 text-left cursor-pointer hover:bg-[rgba(255,255,255,0.02)]"
+        className="w-full p-4 md:p-5 flex items-center justify-between gap-4 text-left cursor-pointer hover:bg-[rgba(255,255,255,0.025)]"
       >
-        <span className="text-sm font-bold text-[var(--text-primary)]">{question}</span>
-        <HelpCircle
-          className={`w-4 h-4 text-[var(--text-muted)] transition-transform ${
-            open ? 'rotate-45 text-[var(--accent-light)]' : ''
+        <span className="text-sm md:text-base font-bold text-[var(--text-primary)]">
+          {question}
+        </span>
+        <span
+          className={`w-7 h-7 rounded-lg border border-[var(--border-color)] flex items-center justify-center text-[var(--text-secondary)] transition-transform shrink-0 ${
+            open ? 'rotate-45 text-blue-300 border-blue-500/40 bg-blue-500/10' : ''
           }`}
-        />
+        >
+          <Plus className="w-4 h-4" />
+        </span>
       </button>
       {open && (
-        <div className="px-4 pb-4 text-xs text-[var(--text-secondary)] leading-relaxed">
+        <div className="px-4 md:px-5 pb-5 text-sm text-[var(--text-secondary)] leading-relaxed">
           {answer}
         </div>
       )}
@@ -557,20 +613,22 @@ function ContactRow({
   href?: string;
 }) {
   const content = (
-    <div className="flex items-center gap-3 p-3 rounded-xl border border-[var(--border-color)] bg-[rgba(255,255,255,0.02)]">
-      <div className="w-9 h-9 rounded-lg bg-[rgba(59,130,246,0.1)] text-[var(--accent-light)] flex items-center justify-center shrink-0">
+    <div className="flex items-center gap-3 p-3.5 rounded-xl border border-[var(--border-color)] bg-[var(--bg-card)] hover:border-[var(--border-hover)] transition-all">
+      <div className="w-10 h-10 rounded-lg bg-blue-500/10 text-blue-300 flex items-center justify-center shrink-0">
         {icon}
       </div>
-      <div className="min-w-0">
+      <div className="min-w-0 flex-1">
         <div className="text-[10px] uppercase tracking-widest text-[var(--text-muted)] font-bold">
           {label}
         </div>
-        <div className="text-sm font-bold text-[var(--text-primary)] truncate">{value}</div>
+        <div className="text-sm font-bold text-[var(--text-primary)] truncate mt-0.5">
+          {value}
+        </div>
       </div>
     </div>
   );
   return href ? (
-    <a href={href} className="block hover:opacity-90 transition-opacity">
+    <a href={href} className="block">
       {content}
     </a>
   ) : (
@@ -590,7 +648,6 @@ function FeedbackForm() {
     if (!message.trim()) return;
     setSending(true);
     setTimeout(() => {
-      // Сохраняем отзыв локально
       try {
         const key = 'oshauto_feedback_v1';
         const existing = JSON.parse(localStorage.getItem(key) || '[]');
@@ -610,12 +667,12 @@ function FeedbackForm() {
     <form
       id="feedback"
       onSubmit={handleSubmit}
-      className="glass-panel p-6 md:p-8 flex flex-col gap-4"
+      className="p-5 md:p-7 rounded-2xl border border-[var(--border-color)] bg-[var(--bg-card)] backdrop-blur-md flex flex-col gap-4 shadow-xl shadow-black/30"
     >
       <div>
-        <h3 className="text-xl font-extrabold">Обратная связь</h3>
+        <h3 className="text-lg md:text-xl font-extrabold">Форма обратной связи</h3>
         <p className="text-sm text-[var(--text-secondary)] mt-1">
-          Заметили ошибку или хотите предложить улучшение?
+          Сообщение попадёт прямо к команде проекта.
         </p>
       </div>
 
@@ -623,14 +680,14 @@ function FeedbackForm() {
         <input
           value={name}
           onChange={(e) => setName(e.target.value)}
-          placeholder="Ваше имя (необязательно)"
-          className="w-full px-3.5 py-2.5 text-sm rounded-xl bg-[rgba(255,255,255,0.03)] border border-[var(--border-color)] outline-none focus:border-[var(--accent)]"
+          placeholder="Ваше имя"
+          className="w-full px-3.5 py-2.5 text-sm rounded-xl bg-[rgba(255,255,255,0.03)] border border-[var(--border-color)] outline-none focus:border-blue-500 transition-colors"
         />
         <input
           value={contact}
           onChange={(e) => setContact(e.target.value)}
           placeholder="Телефон или email"
-          className="w-full px-3.5 py-2.5 text-sm rounded-xl bg-[rgba(255,255,255,0.03)] border border-[var(--border-color)] outline-none focus:border-[var(--accent)]"
+          className="w-full px-3.5 py-2.5 text-sm rounded-xl bg-[rgba(255,255,255,0.03)] border border-[var(--border-color)] outline-none focus:border-blue-500 transition-colors"
         />
       </div>
 
@@ -639,24 +696,20 @@ function FeedbackForm() {
         onChange={(e) => setMessage(e.target.value)}
         placeholder="Опишите ваше предложение или проблему..."
         rows={4}
-        className="w-full px-3.5 py-2.5 text-sm rounded-xl bg-[rgba(255,255,255,0.03)] border border-[var(--border-color)] outline-none focus:border-[var(--accent)] resize-none"
+        className="w-full px-3.5 py-2.5 text-sm rounded-xl bg-[rgba(255,255,255,0.03)] border border-[var(--border-color)] outline-none focus:border-blue-500 resize-none transition-colors"
       />
 
       <button
         type="submit"
         disabled={!message.trim() || sending}
-        className="w-full py-3 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white text-sm font-bold flex items-center justify-center gap-2 cursor-pointer shadow-lg shadow-blue-500/20 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+        className="w-full py-3 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white text-sm font-bold flex items-center justify-center gap-2 cursor-pointer shadow-lg shadow-blue-600/30 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
       >
-        {sending ? (
-          <Loader2 className="w-4 h-4 animate-spin" />
-        ) : (
-          <Send className="w-4 h-4" />
-        )}
+        {sending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
         Отправить отзыв
       </button>
 
       {sent && (
-        <div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-emerald-950/30 border border-emerald-500/30 text-emerald-400 text-xs font-bold">
+        <div className="flex items-center gap-2 px-3 py-2.5 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 text-sm font-semibold">
           <CheckCircle2 className="w-4 h-4" />
           Спасибо! Ваш отзыв принят.
         </div>
@@ -667,9 +720,9 @@ function FeedbackForm() {
 
 function EmptyState({ text }: { text: string }) {
   return (
-    <div className="py-8 px-4 rounded-xl border border-dashed border-[var(--border-color)] text-center flex flex-col items-center gap-2 text-[var(--text-muted)]">
+    <div className="py-10 px-4 rounded-xl border border-dashed border-[var(--border-color)] text-center flex flex-col items-center gap-2 text-[var(--text-muted)]">
       <Search className="w-5 h-5" />
-      <span className="text-xs font-medium">{text}</span>
+      <span className="text-sm font-medium">{text}</span>
     </div>
   );
 }
@@ -678,7 +731,7 @@ function RouteRow({ route, onClick }: { route: Route; onClick: () => void }) {
   return (
     <button
       onClick={onClick}
-      className="w-full text-left p-3 rounded-xl border border-[var(--border-color)] bg-[var(--bg-card)] hover:bg-[var(--bg-card-hover)] flex items-center gap-3 cursor-pointer transition-all"
+      className="w-full text-left p-3 rounded-xl border border-[var(--border-color)] bg-[var(--bg-card)] hover:bg-[var(--bg-card-hover)] hover:border-[var(--border-hover)] flex items-center gap-3 cursor-pointer transition-all"
     >
       <span
         className="w-11 h-11 flex items-center justify-center text-sm font-extrabold rounded-lg shrink-0"
@@ -692,10 +745,12 @@ function RouteRow({ route, onClick }: { route: Route; onClick: () => void }) {
       <div className="flex-1 min-w-0">
         <div className="text-sm font-bold truncate">{route.route_long_name}</div>
         {route.route_desc && (
-          <div className="text-[10px] text-[var(--text-muted)] truncate">{route.route_desc}</div>
+          <div className="text-[11px] text-[var(--text-muted)] truncate mt-0.5">
+            {route.route_desc.split('•')[0].trim()}
+          </div>
         )}
       </div>
-      <ArrowRight className="w-4 h-4 text-[var(--text-muted)]" />
+      <ArrowRight className="w-4 h-4 text-[var(--text-muted)] shrink-0" />
     </button>
   );
 }
@@ -707,9 +762,9 @@ function BusesModalContent({ onPickRoute }: { onPickRoute: (routeId: string) => 
   }, []);
 
   return (
-    <div className="flex flex-col gap-3">
-      <div className="p-3 rounded-xl bg-[rgba(59,130,246,0.05)] border border-[var(--border-color)] text-xs text-[var(--text-secondary)] flex items-start gap-2">
-        <Bus className="w-4 h-4 text-[var(--accent-light)] mt-0.5 shrink-0" />
+    <div className="flex flex-col gap-4">
+      <div className="p-3.5 rounded-xl bg-blue-500/5 border border-blue-500/20 text-sm text-[var(--text-secondary)] flex items-start gap-3">
+        <Bus className="w-4 h-4 text-blue-300 mt-0.5 shrink-0" />
         <span>
           Городские автобусы Оша работают по{' '}
           <b className="text-[var(--text-primary)]">{routes.length}</b> маршрутам.
@@ -724,8 +779,8 @@ function BusesModalContent({ onPickRoute }: { onPickRoute: (routeId: string) => 
         <BusInfoCell tone="blue" label="GPS LIVE" hint="онлайн-движение" />
       </div>
 
-      <div className="border-t border-[var(--border-color)] pt-3 mt-1">
-        <div className="text-xs font-extrabold uppercase tracking-widest text-[var(--text-muted)] mb-2">
+      <div className="border-t border-[var(--border-color)] pt-3">
+        <div className="text-xs font-extrabold uppercase tracking-widest text-[var(--text-muted)] mb-3">
           Парк автобусов
         </div>
         <div className="flex flex-col gap-2">
@@ -748,10 +803,10 @@ function BusInfoCell({
   hint: string;
 }) {
   const colors = {
-    emerald: 'border-emerald-500/30 bg-emerald-950/20 text-emerald-300',
-    amber: 'border-amber-500/30 bg-amber-950/20 text-amber-300',
-    rose: 'border-rose-500/30 bg-rose-950/20 text-rose-300',
-    blue: 'border-blue-500/30 bg-blue-950/20 text-blue-300'
+    emerald: 'border-emerald-500/30 bg-emerald-500/10 text-emerald-200',
+    amber: 'border-amber-500/30 bg-amber-500/10 text-amber-200',
+    rose: 'border-rose-500/30 bg-rose-500/10 text-rose-200',
+    blue: 'border-blue-500/30 bg-blue-500/10 text-blue-200'
   }[tone];
 
   const dot = {
@@ -767,7 +822,7 @@ function BusInfoCell({
         <span className={`w-2.5 h-2.5 rounded-full ${dot} animate-pulse`} />
         <span className="text-sm font-bold">{label}</span>
       </div>
-      <div className="text-[10px] mt-1 opacity-80">{hint}</div>
+      <div className="text-[11px] mt-1 opacity-80">{hint}</div>
     </div>
   );
 }

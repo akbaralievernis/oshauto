@@ -15,9 +15,9 @@ export function SiteHeader({ activePath = 'home' }: SiteHeaderProps) {
     <Link
       href={href}
       onClick={() => setOpen(false)}
-      className={`text-sm font-semibold transition-colors px-3 py-2 rounded-lg ${
+      className={`text-sm font-semibold transition-colors px-3.5 py-2 rounded-lg ${
         activePath === key
-          ? 'text-[var(--text-primary)] bg-[rgba(59,130,246,0.1)]'
+          ? 'text-[var(--text-primary)] bg-[rgba(59,130,246,0.12)]'
           : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[rgba(255,255,255,0.04)]'
       }`}
     >
@@ -27,16 +27,16 @@ export function SiteHeader({ activePath = 'home' }: SiteHeaderProps) {
 
   return (
     <header className="sticky top-0 z-40 backdrop-blur-xl bg-[rgba(13,13,18,0.75)] border-b border-[var(--border-color)]">
-      <div className="max-w-6xl mx-auto px-5 py-3 flex items-center justify-between gap-4">
+      <div className="mx-auto w-full max-w-6xl px-5 sm:px-8 h-16 flex items-center justify-between gap-4">
         <Link href="/" className="flex items-center gap-2.5 shrink-0">
-          <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center shadow-lg shadow-blue-500/20">
+          <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center shadow-lg shadow-blue-500/25">
             <Bus className="w-5 h-5 text-white" />
           </div>
-          <div className="flex flex-col">
-            <span className="text-base font-extrabold leading-none tracking-tight text-[var(--text-primary)]">
+          <div className="flex flex-col leading-none">
+            <span className="text-base font-extrabold tracking-tight text-[var(--text-primary)]">
               OshAuto
             </span>
-            <span className="text-[10px] text-[var(--text-muted)] font-bold tracking-widest uppercase">
+            <span className="text-[10px] text-[var(--text-muted)] font-bold tracking-widest uppercase mt-1">
               Транспорт Оша
             </span>
           </div>
@@ -52,7 +52,7 @@ export function SiteHeader({ activePath = 'home' }: SiteHeaderProps) {
         <div className="flex items-center gap-2">
           <Link
             href="/admin"
-            className="hidden sm:flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-bold border border-[var(--border-color)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:border-[var(--border-hover)] transition-all"
+            className="hidden sm:inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-xs font-bold border border-[var(--border-color)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:border-[var(--border-hover)] transition-all"
           >
             <Settings className="w-3.5 h-3.5" />
             Админ
@@ -68,7 +68,7 @@ export function SiteHeader({ activePath = 'home' }: SiteHeaderProps) {
       </div>
 
       {open && (
-        <div className="md:hidden border-t border-[var(--border-color)] px-3 py-2 flex flex-col gap-1 bg-[var(--bg-solid)]">
+        <div className="md:hidden border-t border-[var(--border-color)] px-4 py-3 flex flex-col gap-1 bg-[var(--bg-solid)]">
           {link('home', '/', 'Главная')}
           {link('routes', '/routes', 'Маршруты')}
           {link('map', '/map', 'Карта')}

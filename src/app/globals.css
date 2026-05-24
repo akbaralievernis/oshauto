@@ -72,19 +72,16 @@
   --font-sans: var(--font-sans);
 }
 
-* {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
-}
-
-body {
+html, body {
   background: var(--background);
   color: var(--foreground);
   font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   transition: background 0.3s ease, color 0.3s ease;
+}
+
+body {
   min-height: 100vh;
 }
 
@@ -93,6 +90,39 @@ body[data-page="map"] {
   overflow: hidden;
   height: 100vh;
   width: 100vw;
+}
+
+/* Дополнительные плавные анимации */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-fadeIn {
+  animation: fadeIn 0.4s ease-out forwards;
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+.bg-gradient-shimmer {
+  background: linear-gradient(90deg,
+    rgba(59,130,246,0) 0%,
+    rgba(59,130,246,0.4) 50%,
+    rgba(59,130,246,0) 100%);
+  background-size: 200% 100%;
+  animation: shimmer 3s linear infinite;
+}
+
+.text-balance {
+  text-wrap: balance;
+}
+
+/* Универсальное скругление и сглаживание ввода */
+input, textarea, select, button {
+  font-family: inherit;
 }
 
 /* CUSTOM SCROLLBARS FOR GLASS PANELS */

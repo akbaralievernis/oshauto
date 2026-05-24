@@ -38,15 +38,15 @@ export default function RoutesPage() {
     <div className="min-h-screen flex flex-col bg-[var(--background)] text-[var(--text-primary)]">
       <SiteHeader activePath="routes" />
 
-      <section className="max-w-6xl mx-auto px-5 py-10 w-full">
-        <div className="flex flex-col gap-4 mb-8">
-          <div className="text-xs font-extrabold uppercase tracking-widest text-[var(--accent-light)]">
+      <section className="mx-auto w-full max-w-6xl px-5 sm:px-8 py-10 md:py-14">
+        <div className="flex flex-col gap-3 mb-8 max-w-2xl">
+          <div className="text-xs font-bold uppercase tracking-widest text-blue-400">
             Городские маршруты
           </div>
-          <h1 className="text-3xl md:text-5xl font-black tracking-tight">
+          <h1 className="text-3xl md:text-5xl font-black tracking-tight leading-tight">
             Маршруты автобусов Оша
           </h1>
-          <p className="text-sm md:text-base text-[var(--text-secondary)] max-w-2xl">
+          <p className="text-base text-[var(--text-secondary)] leading-relaxed">
             Полный список действующих маршрутов с остановками и направлением движения.
           </p>
         </div>
