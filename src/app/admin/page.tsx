@@ -288,8 +288,14 @@ function AdminPageContent() {
       if (typeof window !== 'undefined') {
         const seen = window.localStorage.getItem('oshauto_admin_guide_seen');
         if (seen) setShowGuide(false);
+        document.body.setAttribute('data-page', 'admin');
       }
     } catch {}
+    return () => {
+      try {
+        document.body.removeAttribute('data-page');
+      } catch {}
+    };
   }, []);
 
   const closeGuide = () => {
@@ -679,7 +685,7 @@ function AdminPageContent() {
   return (
     <div className="w-screen h-screen overflow-hidden flex">
       {/* ЛЕВАЯ ПАНЕЛЬ */}
-      <div className="w-[440px] shrink-0 border-r border-[var(--border-color)] bg-[var(--bg-solid)] flex flex-col h-full z-10 shadow-2xl">
+      <div className="w-[440px] shrink-0 border-r border-[var(--border-color)] bg-[var(--bg-solid)] flex flex-col h-full min-h-0 z-10 shadow-2xl">
         {/* Шапка */}
         <div className="px-4 py-3 border-b border-[var(--border-color)] flex items-center justify-between">
           <Link
@@ -742,7 +748,7 @@ function AdminPageContent() {
         </div>
 
         {/* Контент */}
-        <div className="flex-1 overflow-y-auto p-4 flex flex-col gap-3">
+        <div className="flex-1 min-h-0 overflow-y-auto p-4 flex flex-col gap-3">
           {/* Гид */}
           {showGuide && (
             <div className="relative rounded-2xl border border-blue-500/30 bg-gradient-to-br from-blue-500/10 to-indigo-500/5 p-4">
