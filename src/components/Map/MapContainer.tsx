@@ -25,6 +25,41 @@ export function MapContainer({
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const [mapType, setMapType] = useState<'mapbox' | 'leaflet' | 'none'>('none');
   const [isClient, setIsClient] = useState(false);
+  const [routePath, setRoutePath] = useState<[number, number][]>([]);
+
+  // Автоматический расчет сглаженной траектории по дорогам для пассажирской карты
+  useEffect(() => {
+    const getPath = async () => {
+      if (stops.length < 2) {
+        setRoutePath([]);
+        return;
+      }
+      
+      const coordsString = stops.map((s) => `${s.stop_lon},${s.stop_lat}`).join(';');
+      const url = `https://router.project-osrm.org/route/v1/driving/${coordsString}?overview=full&geometries=geojson`;
+      
+      try {
+        const res = await fetch(url);
+        if (res.ok) {
+          const data = await res.json();
+          if (data.routes && data.routes[0]) {
+            const routeCoords = data.routes[0].geometry.coordinates.map(
+              (c: [number, number]) => [c[1], c[0]] as [number, number]
+            );
+            setRoutePath(routeCoords);
+            return;
+          }
+        }
+      } catch (err) {
+        console.error('Ошибка OSRM маршрутизации пассажира:', err);
+      }
+      
+      // Фоллбэк: прямые линии
+      setRoutePath(stops.map((s) => [s.stop_lat, s.stop_lon] as [number, number]));
+    };
+
+    getPath();
+  }, [stops]);
   
   // Хранилища для инстансов и слоев
   const mapboxMapRef = useRef<any>(null);
@@ -148,12 +183,11 @@ export function MapContainer({
         leafletPolylineRef.current = null;
       }
 
-      // 2. Рисуем траекторию пути
-      if (stops.length > 1) {
-        const latLngs = stops.map((s) => [s.stop_lat, s.stop_lon] as [number, number]);
+      // 2. Рисуем траекторию пути (сглаженную по дорогам OSRM)
+      if (routePath.length > 1) {
         const polylineColor = selectedRoute ? `#${selectedRoute.route_color}` : '#3b82f6';
         
-        const polyline = L.polyline(latLngs, {
+        const polyline = L.polyline(routePath, {
           color: polylineColor,
           weight: 5,
           opacity: 0.85,
@@ -351,7 +385,7 @@ export function MapContainer({
         }
       });
     });
-  }, [mapType, stops, vehicles, selectedRoute, activeAlarmStopId]);
+  }, [mapType, stops, routePath, vehicles, selectedRoute, activeAlarmStopId]);
 
   if (!isClient) return <div className="w-full h-full bg-[#0d0d12]" />;
 

@@ -82,12 +82,17 @@ body {
   background: var(--background);
   color: var(--foreground);
   font-family: var(--font-sans);
-  overflow: hidden;
-  height: 100vh;
-  width: 100vw;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   transition: background 0.3s ease, color 0.3s ease;
+  min-height: 100vh;
+}
+
+/* Страницы карты блокируют скролл всего документа */
+body[data-page="map"] {
+  overflow: hidden;
+  height: 100vh;
+  width: 100vw;
 }
 
 /* CUSTOM SCROLLBARS FOR GLASS PANELS */
