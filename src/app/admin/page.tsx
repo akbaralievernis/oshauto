@@ -8,6 +8,7 @@ import {
   deleteCustomRoute,
   CustomRouteRecord
 } from '@/lib/customRoutes';
+import { parseStopsInput, geocodeStops, ParsedStop } from '@/lib/geocoding';
 import {
   DndContext,
   closestCenter,
@@ -36,7 +37,11 @@ import {
   Edit3,
   FilePlus2,
   Hash,
-  X
+  X,
+  ListPlus,
+  Search,
+  AlertTriangle,
+  CheckCircle2
 } from 'lucide-react';
 import Link from 'next/link';
 
@@ -176,6 +181,13 @@ export default function AdminPage() {
   const [manualName, setManualName] = useState('');
   const [manualLat, setManualLat] = useState('');
   const [manualLon, setManualLon] = useState('');
+
+  // Массовый импорт остановок
+  const [showImport, setShowImport] = useState(false);
+  const [importText, setImportText] = useState('');
+  const [importParsed, setImportParsed] = useState<ParsedStop[]>([]);
+  const [importStage, setImportStage] = useState<'input' | 'preview' | 'geocoding' | 'ready'>('input');
+  const [importProgress, setImportProgress] = useState<{ i: number; total: number; current: string } | null>(null);
 
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const leafletMapRef = useRef<any>(null);
@@ -329,6 +341,83 @@ export default function AdminPage() {
       const newIndex = items.findIndex((x) => x.stop_id === over.id);
       return arrayMove(items, oldIndex, newIndex);
     });
+  };
+
+  // ----- МАССОВЫЙ ИМПОРТ -----
+  const handleOpenImport = () => {
+    setImportText('');
+    setImportParsed([]);
+    setImportStage('input');
+    setImportProgress(null);
+    setShowImport(true);
+  };
+
+  const handleParseImport = () => {
+    const parsed = parseStopsInput(importText);
+    if (parsed.length === 0) {
+      alert('Не удалось распознать ни одной остановки. Проверьте, что названия идут с новой строки.');
+      return;
+    }
+    setImportParsed(parsed);
+    setImportStage('preview');
+  };
+
+  const handleGeocodeImport = async () => {
+    if (importParsed.length === 0) return;
+    setImportStage('geocoding');
+    setImportProgress({ i: 0, total: importParsed.length, current: '' });
+
+    const result = await geocodeStops(importParsed, (i, total, stop) => {
+      setImportProgress({ i, total, current: stop.name });
+    });
+
+    setImportParsed(result);
+    setImportStage('ready');
+    setImportProgress(null);
+  };
+
+  const handleEditImportItem = (index: number, patch: Partial<ParsedStop>) => {
+    setImportParsed((prev) => prev.map((s, i) => (i === index ? { ...s, ...patch } : s)));
+  };
+
+  const handleRemoveImportItem = (index: number) => {
+    setImportParsed((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  const handleAddImportedStops = () => {
+    const usable = importParsed.filter(
+      (s) =>
+        typeof s.lat === 'number' &&
+        typeof s.lon === 'number' &&
+        isFinite(s.lat as number) &&
+        isFinite(s.lon as number)
+    );
+    if (usable.length === 0) {
+      alert('Нет ни одной остановки с координатами. Сначала запустите геокодирование или укажите координаты вручную.');
+      return;
+    }
+    const newStops: Stop[] = usable.map((s, idx) => ({
+      stop_id: `stop_${Date.now()}_${idx}_${Math.floor(Math.random() * 1000)}`,
+      stop_name: s.name,
+      stop_lat: s.lat as number,
+      stop_lon: s.lon as number
+    }));
+
+    setStops((prev) => [...prev, ...newStops]);
+    setShowImport(false);
+
+    // Фокусируем карту на добавленных
+    if (leafletMapRef.current) {
+      const bounds = newStops.map((s) => [s.stop_lat, s.stop_lon]);
+      import('leaflet').then(() => {
+        leafletMapRef.current.fitBounds(bounds, { padding: [40, 40] });
+      });
+    }
+
+    const skipped = importParsed.length - usable.length;
+    if (skipped > 0) {
+      alert(`Добавлено ${newStops.length} остановок. Пропущено без координат: ${skipped}.`);
+    }
   };
 
   // Ручное добавление остановки
@@ -492,21 +581,30 @@ export default function AdminPage() {
           </div>
         </div>
 
-        {/* Тулбар: библиотека + новый */}
-        <div className="px-4 pt-4 flex items-center gap-2">
+        {/* Тулбар: библиотека + новый + импорт */}
+        <div className="px-4 pt-4 flex flex-col gap-2">
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setShowLibrary(true)}
+              className="flex-1 px-3 py-2 text-xs font-bold rounded-lg border border-[var(--border-color)] hover:bg-[rgba(255,255,255,0.04)] text-[var(--text-primary)] cursor-pointer flex items-center justify-center gap-1.5"
+            >
+              <FolderOpen className="w-3.5 h-3.5" />
+              Сохранённые ({savedRoutes.length})
+            </button>
+            <button
+              onClick={handleNewRoute}
+              className="px-3 py-2 text-xs font-bold rounded-lg border border-[var(--border-color)] hover:bg-[rgba(255,255,255,0.04)] text-[var(--text-primary)] cursor-pointer flex items-center justify-center gap-1.5"
+            >
+              <FilePlus2 className="w-3.5 h-3.5" />
+              Новый
+            </button>
+          </div>
           <button
-            onClick={() => setShowLibrary(true)}
-            className="flex-1 px-3 py-2 text-xs font-bold rounded-lg border border-[var(--border-color)] hover:bg-[rgba(255,255,255,0.04)] text-[var(--text-primary)] cursor-pointer flex items-center justify-center gap-1.5"
+            onClick={handleOpenImport}
+            className="w-full px-3 py-2 text-xs font-bold rounded-lg border border-emerald-500/40 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-200 cursor-pointer flex items-center justify-center gap-1.5"
           >
-            <FolderOpen className="w-3.5 h-3.5" />
-            Сохранённые ({savedRoutes.length})
-          </button>
-          <button
-            onClick={handleNewRoute}
-            className="px-3 py-2 text-xs font-bold rounded-lg border border-[var(--border-color)] hover:bg-[rgba(255,255,255,0.04)] text-[var(--text-primary)] cursor-pointer flex items-center justify-center gap-1.5"
-          >
-            <FilePlus2 className="w-3.5 h-3.5" />
-            Новый
+            <ListPlus className="w-3.5 h-3.5" />
+            Массовый импорт остановок
           </button>
         </div>
 
@@ -779,6 +877,249 @@ export default function AdminPage() {
           </div>
         </div>
       )}
+
+      {/* МОДАЛКА МАССОВОГО ИМПОРТА */}
+      {showImport && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm"
+          onClick={() => importStage !== 'geocoding' && setShowImport(false)}
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="w-full max-w-3xl max-h-[88vh] glass-panel flex flex-col rounded-2xl border border-[var(--border-color)] overflow-hidden"
+          >
+            <div className="flex items-center justify-between p-4 border-b border-[var(--border-color)]">
+              <div>
+                <div className="text-base font-extrabold">Массовый импорт остановок</div>
+                <div className="text-xs text-[var(--text-muted)]">
+                  Вставьте список — система сама определит координаты по картам OpenStreetMap.
+                </div>
+              </div>
+              <button
+                onClick={() => importStage !== 'geocoding' && setShowImport(false)}
+                disabled={importStage === 'geocoding'}
+                className="p-2 rounded-lg border border-[var(--border-color)] hover:bg-[rgba(255,255,255,0.04)] cursor-pointer disabled:opacity-50"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <div className="flex-1 overflow-y-auto p-4 flex flex-col gap-4">
+              {/* Шаг 1: Ввод текста */}
+              {importStage === 'input' && (
+                <>
+                  <div className="p-3 rounded-xl bg-blue-500/5 border border-blue-500/20 text-xs text-[var(--text-secondary)] leading-relaxed">
+                    <b className="text-blue-200">Поддерживаемые форматы:</b>
+                    <ul className="list-disc list-inside mt-1.5 space-y-1">
+                      <li>
+                        Просто название каждой остановки с новой строки —{' '}
+                        <i className="text-[var(--text-muted)]">мы найдём координаты автоматически.</i>
+                      </li>
+                      <li>
+                        Формат с координатами:{' '}
+                        <code className="px-1 py-0.5 rounded bg-[rgba(255,255,255,0.06)] font-mono text-[10px]">
+                          Название; 40.5215; 72.7981
+                        </code>
+                      </li>
+                      <li>
+                        Региональные пометки (Ош г., Кыргызстан, область) будут отфильтрованы.
+                      </li>
+                    </ul>
+                  </div>
+
+                  <textarea
+                    value={importText}
+                    onChange={(e) => setImportText(e.target.value)}
+                    placeholder={`Борбордук базар\nАнар (Толойкон)\nСупермаркет Миллион\nКинотеатр Кыргызстан\n...`}
+                    rows={14}
+                    className="w-full px-3 py-2 text-xs font-mono leading-relaxed rounded-lg bg-[rgba(255,255,255,0.03)] border border-[var(--border-color)] text-white outline-none focus:border-blue-500 resize-y"
+                  />
+
+                  <div className="flex items-center justify-between">
+                    <div className="text-[10px] text-[var(--text-muted)]">
+                      Строк введено: {importText.split(/\r?\n/).filter((l) => l.trim()).length}
+                    </div>
+                    <button
+                      onClick={handleParseImport}
+                      disabled={!importText.trim()}
+                      className="px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold flex items-center gap-1.5 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      Распарсить
+                      <Search className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                </>
+              )}
+
+              {/* Шаг 2: Предпросмотр */}
+              {importStage === 'preview' && (
+                <>
+                  <div className="flex items-center justify-between">
+                    <div className="text-xs font-bold text-[var(--text-secondary)]">
+                      Найдено остановок:{' '}
+                      <b className="text-[var(--text-primary)]">{importParsed.length}</b>
+                    </div>
+                    <button
+                      onClick={() => setImportStage('input')}
+                      className="text-[10px] font-bold text-[var(--text-muted)] hover:text-[var(--text-primary)] cursor-pointer"
+                    >
+                      ← Назад к тексту
+                    </button>
+                  </div>
+
+                  <div className="flex flex-col gap-1.5 max-h-[420px] overflow-y-auto pr-1">
+                    {importParsed.map((s, i) => (
+                      <ImportRow
+                        key={i}
+                        index={i}
+                        stop={s}
+                        onEdit={(p) => handleEditImportItem(i, p)}
+                        onRemove={() => handleRemoveImportItem(i)}
+                      />
+                    ))}
+                  </div>
+
+                  <div className="flex items-center justify-between gap-2 pt-2 border-t border-[var(--border-color)]">
+                    <div className="text-[10px] text-[var(--text-muted)] leading-tight max-w-[60%]">
+                      Геокодирование займёт ~1 сек на остановку (политика OpenStreetMap). Можно прервать после старта.
+                    </div>
+                    <button
+                      onClick={handleGeocodeImport}
+                      disabled={importParsed.length === 0}
+                      className="px-4 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
+                    >
+                      <Search className="w-3.5 h-3.5" />
+                      Найти координаты ({importParsed.length})
+                    </button>
+                  </div>
+                </>
+              )}
+
+              {/* Шаг 3: Прогресс */}
+              {importStage === 'geocoding' && importProgress && (
+                <div className="flex flex-col items-center gap-3 py-10">
+                  <RefreshCw className="w-8 h-8 text-blue-400 animate-spin" />
+                  <div className="text-sm font-bold">
+                    {importProgress.i} / {importProgress.total}
+                  </div>
+                  <div className="text-xs text-[var(--text-muted)] text-center max-w-md truncate">
+                    {importProgress.current}
+                  </div>
+                  <div className="w-full max-w-md h-2 rounded-full bg-[rgba(255,255,255,0.05)] overflow-hidden">
+                    <div
+                      className="h-full bg-blue-500 transition-all"
+                      style={{
+                        width: `${(importProgress.i / importProgress.total) * 100}%`
+                      }}
+                    />
+                  </div>
+                </div>
+              )}
+
+              {/* Шаг 4: Готово */}
+              {importStage === 'ready' && (
+                <>
+                  <div className="flex items-center justify-between">
+                    <div className="text-xs font-bold text-[var(--text-secondary)]">
+                      Найдено координат:{' '}
+                      <b className="text-emerald-300">
+                        {importParsed.filter((s) => typeof s.lat === 'number').length}
+                      </b>{' '}
+                      из <b className="text-[var(--text-primary)]">{importParsed.length}</b>
+                    </div>
+                    <button
+                      onClick={() => setImportStage('preview')}
+                      className="text-[10px] font-bold text-[var(--text-muted)] hover:text-[var(--text-primary)] cursor-pointer"
+                    >
+                      ← Редактировать
+                    </button>
+                  </div>
+
+                  <div className="flex flex-col gap-1.5 max-h-[420px] overflow-y-auto pr-1">
+                    {importParsed.map((s, i) => (
+                      <ImportRow
+                        key={i}
+                        index={i}
+                        stop={s}
+                        onEdit={(p) => handleEditImportItem(i, p)}
+                        onRemove={() => handleRemoveImportItem(i)}
+                      />
+                    ))}
+                  </div>
+
+                  <div className="flex items-center justify-end gap-2 pt-2 border-t border-[var(--border-color)]">
+                    <button
+                      onClick={handleAddImportedStops}
+                      className="px-4 py-2 rounded-lg bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white text-xs font-bold flex items-center gap-1.5 cursor-pointer"
+                    >
+                      <Plus className="w-3.5 h-3.5" />
+                      Добавить в маршрут
+                    </button>
+                  </div>
+                </>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// -------------------------------------------------------------
+// ОТДЕЛЬНАЯ СТРОКА В МОДАЛКЕ ИМПОРТА
+// -------------------------------------------------------------
+interface ImportRowProps {
+  index: number;
+  stop: ParsedStop;
+  onEdit: (patch: Partial<ParsedStop>) => void;
+  onRemove: () => void;
+}
+
+function ImportRow({ index, stop, onEdit, onRemove }: ImportRowProps) {
+  const hasCoords = typeof stop.lat === 'number' && typeof stop.lon === 'number';
+  return (
+    <div
+      className={`flex items-center gap-2 p-2.5 rounded-lg border ${
+        hasCoords
+          ? 'border-emerald-500/30 bg-emerald-500/5'
+          : 'border-amber-500/30 bg-amber-500/5'
+      }`}
+    >
+      <span className="w-6 h-6 flex items-center justify-center text-[10px] font-bold rounded-full bg-[var(--border-color)] text-[var(--text-secondary)] shrink-0">
+        {index + 1}
+      </span>
+      <input
+        type="text"
+        value={stop.name}
+        onChange={(e) => onEdit({ name: e.target.value })}
+        className="flex-1 min-w-0 text-xs font-semibold bg-transparent border-0 outline-none text-[var(--text-primary)] py-1"
+      />
+      <input
+        type="text"
+        value={stop.lat ?? ''}
+        onChange={(e) => onEdit({ lat: e.target.value === '' ? undefined : Number(e.target.value) })}
+        placeholder="Широта"
+        className="w-24 px-2 py-1 text-[10px] font-mono rounded bg-[rgba(255,255,255,0.04)] border border-[var(--border-color)] text-white outline-none focus:border-blue-500"
+      />
+      <input
+        type="text"
+        value={stop.lon ?? ''}
+        onChange={(e) => onEdit({ lon: e.target.value === '' ? undefined : Number(e.target.value) })}
+        placeholder="Долгота"
+        className="w-24 px-2 py-1 text-[10px] font-mono rounded bg-[rgba(255,255,255,0.04)] border border-[var(--border-color)] text-white outline-none focus:border-blue-500"
+      />
+      {hasCoords ? (
+        <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+      ) : (
+        <AlertTriangle className="w-4 h-4 text-amber-400 shrink-0" />
+      )}
+      <button
+        onClick={onRemove}
+        className="p-1.5 rounded-lg text-red-400 hover:bg-red-950/20 cursor-pointer"
+      >
+        <Trash2 className="w-3.5 h-3.5" />
+      </button>
     </div>
   );
 }
