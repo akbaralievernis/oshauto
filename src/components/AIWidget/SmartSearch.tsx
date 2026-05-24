@@ -57,7 +57,7 @@ export function SmartSearch({ onRouteFound }: SmartSearchProps) {
   // Переключение голосового ввода
   const toggleListening = () => {
     if (!recognition) {
-      alert('Голосовой ввод не поддерживается вашим браузером.');
+      alert('Үн менен издөө сиздин браузерде колдоого алынбайт.');
       return;
     }
 
@@ -166,7 +166,7 @@ export function SmartSearch({ onRouteFound }: SmartSearchProps) {
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           onKeyDown={(e) => e.key === 'Enter' && handleSubmitQuery(query)}
-          placeholder="Куда едем? (например: Араванская)"
+          placeholder="Кайсы аялдамага барасыз? (мисалы: Араванская)"
           className="w-full py-3 px-3 text-sm bg-transparent border-0 outline-none text-[var(--text-primary)] placeholder-[var(--text-muted)]"
         />
 
@@ -221,13 +221,13 @@ export function SmartSearch({ onRouteFound }: SmartSearchProps) {
           <div className="flex items-center justify-between text-xs font-bold text-[var(--accent-light)] uppercase tracking-wider">
             <span className="flex items-center gap-1.5">
               <Sparkles className="w-3.5 h-3.5 text-amber-400 animate-pulse" />
-              Маршрутный ИИ-Ассистент
+              Маршрут ИИ-Жардамчысы
             </span>
 
             {aiResponse && !isLoading && (
               <button
                 onClick={speakResponse}
-                title="Озвучить ответ"
+                title="Жоопту үн менен окуу"
                 className="p-1 rounded text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[rgba(255,255,255,0.03)] cursor-pointer"
               >
                 <Volume2 className="w-3.5 h-3.5" />

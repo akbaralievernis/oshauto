@@ -76,7 +76,7 @@ function SortableStopItem({ stop, index, onRemove, onRename, onEditCoords }: Sor
     const lat = Number(tempLat);
     const lon = Number(tempLon);
     if (!isFinite(lat) || !isFinite(lon)) {
-      alert('Введите корректные координаты (числа).');
+      alert('Туура координаталарды киргизиңиз (сан түрүндө).');
       return;
     }
     onEditCoords(stop.stop_id, lat, lon);
@@ -112,7 +112,7 @@ function SortableStopItem({ stop, index, onRemove, onRename, onEditCoords }: Sor
 
         <button
           onClick={() => setEditingCoords((v) => !v)}
-          title="Изменить координаты вручную"
+          title="Координаталарды кол менен өзгөртүү"
           className="p-1.5 text-[var(--text-muted)] hover:text-[var(--accent-light)] rounded-lg transition-colors cursor-pointer shrink-0"
         >
           <Edit3 className="w-3.5 h-3.5" />
@@ -120,7 +120,7 @@ function SortableStopItem({ stop, index, onRemove, onRename, onEditCoords }: Sor
 
         <button
           onClick={() => onRemove(stop.stop_id)}
-          title="Удалить остановку"
+          title="Аялдаманы өчүрүү"
           className="p-1.5 text-[var(--text-muted)] hover:text-red-400 hover:bg-red-950/20 rounded-lg transition-colors cursor-pointer shrink-0"
         >
           <Trash2 className="w-3.5 h-3.5" />
@@ -132,13 +132,13 @@ function SortableStopItem({ stop, index, onRemove, onRename, onEditCoords }: Sor
           <input
             value={tempLat}
             onChange={(e) => setTempLat(e.target.value)}
-            placeholder="Широта"
+            placeholder="Кеңдик"
             className="flex-1 min-w-0 px-2 py-1 text-[10px] font-mono rounded bg-[rgba(255,255,255,0.04)] border border-[var(--border-color)] text-white outline-none focus:border-[var(--accent)]"
           />
           <input
             value={tempLon}
             onChange={(e) => setTempLon(e.target.value)}
-            placeholder="Долгота"
+            placeholder="Узундук"
             className="flex-1 min-w-0 px-2 py-1 text-[10px] font-mono rounded bg-[rgba(255,255,255,0.04)] border border-[var(--border-color)] text-white outline-none focus:border-[var(--accent)]"
           />
           <button
@@ -163,9 +163,9 @@ function SortableStopItem({ stop, index, onRemove, onRename, onEditCoords }: Sor
 export default function AdminPage() {
   const [routeId, setRouteId] = useState<string>('201');
   const [routeShortName, setRouteShortName] = useState<string>('12');
-  const [routeLongName, setRouteLongName] = useState<string>('мкрн. Анар — мкрн. Юго-Восток');
+  const [routeLongName, setRouteLongName] = useState<string>('мкрн. Анар — мкрн. Туштүк-Чыгыш');
   const [routeColor, setRouteColor] = useState<string>('3b82f6');
-  const [routeDesc, setRouteDesc] = useState<string>('Новый скоростной маршрут');
+  const [routeDesc, setRouteDesc] = useState<string>('Жаңы тез маршрут');
   const [intervalMinutes, setIntervalMinutes] = useState<number>(8);
   const [operatingHours, setOperatingHours] = useState<string>('06:00 - 21:30');
 
@@ -256,7 +256,7 @@ export default function AdminPage() {
           ...prev,
           {
             stop_id: newStopId,
-            stop_name: `Остановка ${prev.length + 1}`,
+            stop_name: `Аялдама ${prev.length + 1}`,
             stop_lat: lat,
             stop_lon: lng
           }
@@ -355,7 +355,7 @@ export default function AdminPage() {
   const handleParseImport = () => {
     const parsed = parseStopsInput(importText);
     if (parsed.length === 0) {
-      alert('Не удалось распознать ни одной остановки. Проверьте, что названия идут с новой строки.');
+      alert('Эч бир аялдама табылган жок. Аттар жаңы саптан жазылганын текшериңиз.');
       return;
     }
     setImportParsed(parsed);
@@ -393,7 +393,7 @@ export default function AdminPage() {
         isFinite(s.lon as number)
     );
     if (usable.length === 0) {
-      alert('Нет ни одной остановки с координатами. Сначала запустите геокодирование или укажите координаты вручную.');
+      alert('Координаталары бар бирөө да аялдама жок. Адегенде геокодирлоону иштетиңиз же координаталарды кол менен жазыңыз.');
       return;
     }
     const newStops: Stop[] = usable.map((s, idx) => ({
@@ -416,7 +416,7 @@ export default function AdminPage() {
 
     const skipped = importParsed.length - usable.length;
     if (skipped > 0) {
-      alert(`Добавлено ${newStops.length} остановок. Пропущено без координат: ${skipped}.`);
+      alert(`${newStops.length} аялдама кошулду. Координаталарсыз калгандар: ${skipped}.`);
     }
   };
 
@@ -425,11 +425,11 @@ export default function AdminPage() {
     const lat = Number(manualLat);
     const lon = Number(manualLon);
     if (!manualName.trim()) {
-      alert('Введите название остановки.');
+      alert('Аялдаманын атын жазыңыз.');
       return;
     }
     if (!isFinite(lat) || !isFinite(lon)) {
-      alert('Введите корректные координаты (числа). Пример: 40.5215, 72.7981');
+      alert('Туура координаталарды жазыңыз. Мисалы: 40.5215, 72.7981');
       return;
     }
     const newStop: Stop = {
@@ -468,7 +468,7 @@ export default function AdminPage() {
 
   // Удаление из библиотеки
   const handleDeleteSaved = (id: string) => {
-    if (!confirm('Удалить этот маршрут? Действие необратимо.')) return;
+    if (!confirm('Бул маршрутту өчүрөсүзбү? Аракет кайтарылбайт.')) return;
     deleteCustomRoute(id);
     setSavedRoutes(getCustomRoutes());
   };
@@ -489,15 +489,15 @@ export default function AdminPage() {
   // Сохранение
   const handleSaveRoute = async () => {
     if (!routeShortName.trim()) {
-      alert('Укажите номер маршрута.');
+      alert('Маршруттун номерин жазыңыз.');
       return;
     }
     if (!routeLongName.trim()) {
-      alert('Укажите название маршрута.');
+      alert('Маршруттун атын жазыңыз.');
       return;
     }
     if (stops.length === 0) {
-      alert('Добавьте хотя бы одну остановку.');
+      alert('Кеминде бир аялдама кошуңуз.');
       return;
     }
 
@@ -508,7 +508,7 @@ export default function AdminPage() {
         route_id: routeId,
         route_short_name: routeShortName,
         route_long_name: routeLongName,
-        route_desc: `${routeDesc} • Интервал: ${intervalMinutes}м • ${operatingHours}`,
+        route_desc: `${routeDesc} • Аралык: ${intervalMinutes} мүн • ${operatingHours}`,
         route_type: 3,
         route_color: routeColor.replace('#', ''),
         route_text_color: 'ffffff'
@@ -549,15 +549,15 @@ export default function AdminPage() {
         });
         if (tripErr) throw tripErr;
 
-        alert('Маршрут сохранён локально и в Supabase!');
+        alert('Маршрут локалдуу жана Supabase-та сакталды!');
       } else {
         alert(
-          `Маршрут "${routeShortName}" сохранён локально и теперь доступен на сайте. Маршрут отображается в разделе "Маршруты".`
+          `"${routeShortName}" маршруту локалдуу сакталды жана сайтта көрсөтүлдү. Аны "Маршруттар" бөлүмүнөн көрө аласыз.`
         );
       }
     } catch (err: any) {
       console.error(err);
-      alert('Локально маршрут сохранён, но при отправке в Supabase возникла ошибка: ' + (err?.message || ''));
+      alert('Маршрут локалдуу сакталды, бирок Supabase-ке жөнөтүүдө ката болду: ' + (err?.message || ''));
     } finally {
       setIsSaving(false);
     }
@@ -573,11 +573,11 @@ export default function AdminPage() {
             className="flex items-center gap-1.5 text-xs font-bold text-[var(--text-secondary)] hover:text-white transition-colors"
           >
             <ArrowLeft className="w-3.5 h-3.5" />
-            На главную
+            Башкы бетке
           </Link>
           <div className="flex items-center gap-1 text-[10px] font-extrabold px-2.5 py-1 rounded bg-amber-950/20 border border-amber-500/30 text-amber-400">
             <Settings className="w-3 h-3" />
-            КОНСТРУКТОР
+            КУРАШТЫРГЫЧ
           </div>
         </div>
 
@@ -589,14 +589,14 @@ export default function AdminPage() {
               className="flex-1 px-3 py-2 text-xs font-bold rounded-lg border border-[var(--border-color)] hover:bg-[rgba(255,255,255,0.04)] text-[var(--text-primary)] cursor-pointer flex items-center justify-center gap-1.5"
             >
               <FolderOpen className="w-3.5 h-3.5" />
-              Сохранённые ({savedRoutes.length})
+              Сакталгандар ({savedRoutes.length})
             </button>
             <button
               onClick={handleNewRoute}
               className="px-3 py-2 text-xs font-bold rounded-lg border border-[var(--border-color)] hover:bg-[rgba(255,255,255,0.04)] text-[var(--text-primary)] cursor-pointer flex items-center justify-center gap-1.5"
             >
               <FilePlus2 className="w-3.5 h-3.5" />
-              Новый
+              Жаңы
             </button>
           </div>
           <button
@@ -604,7 +604,7 @@ export default function AdminPage() {
             className="w-full px-3 py-2 text-xs font-bold rounded-lg border border-emerald-500/40 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-200 cursor-pointer flex items-center justify-center gap-1.5"
           >
             <ListPlus className="w-3.5 h-3.5" />
-            Массовый импорт остановок
+            Аялдамаларды массалык кошуу
           </button>
         </div>
 
@@ -612,7 +612,7 @@ export default function AdminPage() {
         <div className="flex-1 overflow-y-auto p-4 flex flex-col gap-4">
           <div className="flex flex-col gap-1.5">
             <label className="text-[10px] font-bold uppercase tracking-wider text-[var(--text-muted)]">
-              ID маршрута
+              Маршрут ID
             </label>
             <input
               type="text"
@@ -637,7 +637,7 @@ export default function AdminPage() {
 
             <div className="flex flex-col gap-1.5">
               <label className="text-[10px] font-bold uppercase tracking-wider text-[var(--text-muted)]">
-                Цвет (HEX)
+                Түс (HEX)
               </label>
               <div className="flex gap-2 items-center">
                 <input
@@ -658,7 +658,7 @@ export default function AdminPage() {
 
           <div className="flex flex-col gap-1.5">
             <label className="text-[10px] font-bold uppercase tracking-wider text-[var(--text-muted)]">
-              Название (откуда — куда)
+              Аталышы (кайдан — кайда)
             </label>
             <input
               type="text"
@@ -670,7 +670,7 @@ export default function AdminPage() {
 
           <div className="flex flex-col gap-1.5">
             <label className="text-[10px] font-bold uppercase tracking-wider text-[var(--text-muted)]">
-              Описание
+              Сүрөттөмө
             </label>
             <textarea
               value={routeDesc}
@@ -683,7 +683,7 @@ export default function AdminPage() {
           <div className="grid grid-cols-2 gap-3">
             <div className="flex flex-col gap-1.5">
               <label className="text-[10px] font-bold uppercase tracking-wider text-[var(--text-muted)]">
-                Интервал (мин)
+                Аралык (мүн)
               </label>
               <input
                 type="number"
@@ -694,7 +694,7 @@ export default function AdminPage() {
             </div>
             <div className="flex flex-col gap-1.5">
               <label className="text-[10px] font-bold uppercase tracking-wider text-[var(--text-muted)]">
-                Время работы
+                Иштөө убактысы
               </label>
               <input
                 type="text"
@@ -709,23 +709,23 @@ export default function AdminPage() {
           <div className="flex flex-col gap-2 p-3 rounded-xl border border-blue-900/40 bg-blue-950/10">
             <div className="flex items-center gap-1.5 text-[10px] font-extrabold uppercase tracking-widest text-blue-300">
               <Hash className="w-3.5 h-3.5" />
-              Добавить остановку вручную
+              Кол менен аялдама кошуу
             </div>
             <input
-              placeholder="Название остановки"
+              placeholder="Аялдаманын аты"
               value={manualName}
               onChange={(e) => setManualName(e.target.value)}
               className="px-3 py-2 text-xs font-semibold rounded-lg bg-[rgba(255,255,255,0.03)] border border-[var(--border-color)] text-white outline-none focus:border-[var(--accent)]"
             />
             <div className="grid grid-cols-2 gap-2">
               <input
-                placeholder="Широта (40.5215)"
+                placeholder="Кеңдик (40.5215)"
                 value={manualLat}
                 onChange={(e) => setManualLat(e.target.value)}
                 className="px-3 py-2 text-xs font-mono rounded-lg bg-[rgba(255,255,255,0.03)] border border-[var(--border-color)] text-white outline-none focus:border-[var(--accent)]"
               />
               <input
-                placeholder="Долгота (72.7981)"
+                placeholder="Узундук (72.7981)"
                 value={manualLon}
                 onChange={(e) => setManualLon(e.target.value)}
                 className="px-3 py-2 text-xs font-mono rounded-lg bg-[rgba(255,255,255,0.03)] border border-[var(--border-color)] text-white outline-none focus:border-[var(--accent)]"
@@ -736,7 +736,7 @@ export default function AdminPage() {
               className="py-2 rounded-lg text-xs font-bold bg-blue-600 hover:bg-blue-500 text-white flex items-center justify-center gap-1.5 cursor-pointer"
             >
               <Plus className="w-3.5 h-3.5" />
-              Добавить
+              Кошуу
             </button>
           </div>
 
@@ -744,14 +744,14 @@ export default function AdminPage() {
           <div className="flex flex-col gap-2 mt-1">
             <div className="flex items-center justify-between">
               <span className="text-[10px] font-bold uppercase tracking-wider text-[var(--text-muted)]">
-                Остановки ({stops.length})
+                Аялдамалар ({stops.length})
               </span>
               {stops.length > 0 && (
                 <button
                   onClick={() => setStops([])}
                   className="text-[10px] font-bold text-red-400 hover:text-red-300 cursor-pointer"
                 >
-                  Сбросить все
+                  Бардыгын тазалоо
                 </button>
               )}
             </div>
@@ -759,9 +759,9 @@ export default function AdminPage() {
             {stops.length === 0 ? (
               <div className="py-6 px-4 rounded-xl border border-dashed border-[var(--border-color)] text-center flex flex-col items-center gap-1 text-[var(--text-muted)] select-none">
                 <MapPin className="w-6 h-6" />
-                <span className="text-xs font-bold">Карта интерактивна</span>
+                <span className="text-xs font-bold">Карта интерактивдүү</span>
                 <span className="text-[10px]">
-                  Кликайте по карте или используйте ручной ввод
+                  Картага басыңыз же кол менен кошуңуз
                 </span>
               </div>
             ) : (
@@ -792,7 +792,7 @@ export default function AdminPage() {
             className="w-full py-3 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white text-xs font-bold flex items-center justify-center gap-2 cursor-pointer shadow-lg active:scale-98 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {isSaving ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
-            Сохранить маршрут
+            Маршрутту сактоо
           </button>
         </div>
       </div>
@@ -803,7 +803,7 @@ export default function AdminPage() {
         <div className="absolute top-4 left-4 z-10 pointer-events-none">
           <div className="px-4 py-2.5 text-xs font-bold rounded-xl glass-panel text-amber-400 pointer-events-auto border border-amber-500/30 flex items-center gap-2 shadow-2xl select-none max-w-md">
             <HelpCircle className="w-4 h-4 shrink-0 text-amber-400" />
-            Кликните в любую точку карты, чтобы добавить остановку. Перетаскивайте в списке слева для упорядочивания.
+            Аялдама кошуу үчүн картанын каалаган жерине басыңыз. Иретин өзгөртүү үчүн сол жактагы тизмени сүйрөңүз.
           </div>
         </div>
       </div>
@@ -820,9 +820,9 @@ export default function AdminPage() {
           >
             <div className="flex items-center justify-between p-4 border-b border-[var(--border-color)]">
               <div>
-                <div className="text-base font-extrabold">Сохранённые маршруты</div>
+                <div className="text-base font-extrabold">Сакталган маршруттар</div>
                 <div className="text-xs text-[var(--text-muted)]">
-                  Всего: {savedRoutes.length}. Нажмите, чтобы загрузить.
+                  Бардыгы: {savedRoutes.length}. Жүктөө үчүн басыңыз.
                 </div>
               </div>
               <button
@@ -835,7 +835,7 @@ export default function AdminPage() {
             <div className="flex-1 overflow-y-auto p-4 flex flex-col gap-2">
               {savedRoutes.length === 0 ? (
                 <div className="py-10 text-center text-xs text-[var(--text-muted)]">
-                  Пока нет сохранённых маршрутов. Создайте первый!
+                  Азырынча сакталган маршрут жок. Биринчисин жасаңыз!
                 </div>
               ) : (
                 savedRoutes.map((rec) => (
@@ -855,14 +855,14 @@ export default function AdminPage() {
                     <div className="flex-1 min-w-0">
                       <div className="text-sm font-bold truncate">{rec.route.route_long_name}</div>
                       <div className="text-[10px] text-[var(--text-muted)] truncate">
-                        {rec.stops.length} остановок • Создан {new Date(rec.created_at).toLocaleDateString()}
+                        {rec.stops.length} аялдама • Түзүлгөн {new Date(rec.created_at).toLocaleDateString()}
                       </div>
                     </div>
                     <button
                       onClick={() => handleLoadRoute(rec)}
                       className="px-3 py-1.5 text-[10px] font-bold rounded-lg bg-blue-600 hover:bg-blue-500 text-white cursor-pointer"
                     >
-                      Загрузить
+                      Жүктөө
                     </button>
                     <button
                       onClick={() => handleDeleteSaved(rec.route.route_id)}
@@ -890,9 +890,9 @@ export default function AdminPage() {
           >
             <div className="flex items-center justify-between p-4 border-b border-[var(--border-color)]">
               <div>
-                <div className="text-base font-extrabold">Массовый импорт остановок</div>
+                <div className="text-base font-extrabold">Аялдамаларды массалык кошуу</div>
                 <div className="text-xs text-[var(--text-muted)]">
-                  Вставьте список — система сама определит координаты по картам OpenStreetMap.
+                  Тизмени жайгаштырыңыз — система координаталарды OpenStreetMap карталарынан өзү табат.
                 </div>
               </div>
               <button
@@ -909,20 +909,20 @@ export default function AdminPage() {
               {importStage === 'input' && (
                 <>
                   <div className="p-3 rounded-xl bg-blue-500/5 border border-blue-500/20 text-xs text-[var(--text-secondary)] leading-relaxed">
-                    <b className="text-blue-200">Поддерживаемые форматы:</b>
+                    <b className="text-blue-200">Колдоого алынган форматтар:</b>
                     <ul className="list-disc list-inside mt-1.5 space-y-1">
                       <li>
-                        Просто название каждой остановки с новой строки —{' '}
-                        <i className="text-[var(--text-muted)]">мы найдём координаты автоматически.</i>
+                        Ар бир аялдаманын атын жаңы саптан —{' '}
+                        <i className="text-[var(--text-muted)]">координаталарын автоматтык табабыз.</i>
                       </li>
                       <li>
-                        Формат с координатами:{' '}
+                        Координаталары менен формат:{' '}
                         <code className="px-1 py-0.5 rounded bg-[rgba(255,255,255,0.06)] font-mono text-[10px]">
-                          Название; 40.5215; 72.7981
+                          Аталышы; 40.5215; 72.7981
                         </code>
                       </li>
                       <li>
-                        Региональные пометки (Ош г., Кыргызстан, область) будут отфильтрованы.
+                        Регионалдык белгилөөлөр (Ош г., Кыргызстан, область) автоматтык чыпкаланат.
                       </li>
                     </ul>
                   </div>
@@ -937,14 +937,14 @@ export default function AdminPage() {
 
                   <div className="flex items-center justify-between">
                     <div className="text-[10px] text-[var(--text-muted)]">
-                      Строк введено: {importText.split(/\r?\n/).filter((l) => l.trim()).length}
+                      Сап саны: {importText.split(/\r?\n/).filter((l) => l.trim()).length}
                     </div>
                     <button
                       onClick={handleParseImport}
                       disabled={!importText.trim()}
                       className="px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold flex items-center gap-1.5 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                     >
-                      Распарсить
+                      Талдоо
                       <Search className="w-3.5 h-3.5" />
                     </button>
                   </div>
@@ -956,14 +956,14 @@ export default function AdminPage() {
                 <>
                   <div className="flex items-center justify-between">
                     <div className="text-xs font-bold text-[var(--text-secondary)]">
-                      Найдено остановок:{' '}
+                      Табылган аялдамалар:{' '}
                       <b className="text-[var(--text-primary)]">{importParsed.length}</b>
                     </div>
                     <button
                       onClick={() => setImportStage('input')}
                       className="text-[10px] font-bold text-[var(--text-muted)] hover:text-[var(--text-primary)] cursor-pointer"
                     >
-                      ← Назад к тексту
+                      ← Тексткe кайтуу
                     </button>
                   </div>
 
@@ -981,7 +981,7 @@ export default function AdminPage() {
 
                   <div className="flex items-center justify-between gap-2 pt-2 border-t border-[var(--border-color)]">
                     <div className="text-[10px] text-[var(--text-muted)] leading-tight max-w-[60%]">
-                      Геокодирование займёт ~1 сек на остановку (политика OpenStreetMap). Можно прервать после старта.
+                      Геокодирлөө ар бир аялдамага ~1 сек алат (OpenStreetMap эрежеси).
                     </div>
                     <button
                       onClick={handleGeocodeImport}
@@ -989,7 +989,7 @@ export default function AdminPage() {
                       className="px-4 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
                     >
                       <Search className="w-3.5 h-3.5" />
-                      Найти координаты ({importParsed.length})
+                      Координаталарды табуу ({importParsed.length})
                     </button>
                   </div>
                 </>
@@ -1021,17 +1021,17 @@ export default function AdminPage() {
                 <>
                   <div className="flex items-center justify-between">
                     <div className="text-xs font-bold text-[var(--text-secondary)]">
-                      Найдено координат:{' '}
+                      Табылган координаталар:{' '}
                       <b className="text-emerald-300">
                         {importParsed.filter((s) => typeof s.lat === 'number').length}
                       </b>{' '}
-                      из <b className="text-[var(--text-primary)]">{importParsed.length}</b>
+                      / <b className="text-[var(--text-primary)]">{importParsed.length}</b>
                     </div>
                     <button
                       onClick={() => setImportStage('preview')}
                       className="text-[10px] font-bold text-[var(--text-muted)] hover:text-[var(--text-primary)] cursor-pointer"
                     >
-                      ← Редактировать
+                      ← Түзөтүү
                     </button>
                   </div>
 
@@ -1053,7 +1053,7 @@ export default function AdminPage() {
                       className="px-4 py-2 rounded-lg bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white text-xs font-bold flex items-center gap-1.5 cursor-pointer"
                     >
                       <Plus className="w-3.5 h-3.5" />
-                      Добавить в маршрут
+                      Маршрутка кошуу
                     </button>
                   </div>
                 </>
@@ -1099,14 +1099,14 @@ function ImportRow({ index, stop, onEdit, onRemove }: ImportRowProps) {
         type="text"
         value={stop.lat ?? ''}
         onChange={(e) => onEdit({ lat: e.target.value === '' ? undefined : Number(e.target.value) })}
-        placeholder="Широта"
+        placeholder="Кеңдик"
         className="w-24 px-2 py-1 text-[10px] font-mono rounded bg-[rgba(255,255,255,0.04)] border border-[var(--border-color)] text-white outline-none focus:border-blue-500"
       />
       <input
         type="text"
         value={stop.lon ?? ''}
         onChange={(e) => onEdit({ lon: e.target.value === '' ? undefined : Number(e.target.value) })}
-        placeholder="Долгота"
+        placeholder="Узундук"
         className="w-24 px-2 py-1 text-[10px] font-mono rounded bg-[rgba(255,255,255,0.04)] border border-[var(--border-color)] text-white outline-none focus:border-blue-500"
       />
       {hasCoords ? (

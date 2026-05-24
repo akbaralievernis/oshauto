@@ -46,7 +46,7 @@ export function RouteCard({ route, stops, onSelectStop, onUpdateCongestion }: Ro
           congestion_status: status,
           timestamp: new Date().toISOString()
         });
-        alert('🌐 Вы оффлайн. Оценка сохранена в IndexedDB и будет отправлена при подключении к сети. Нам важен ваш вклад!');
+        alert('Сиз оффлайн режимдесиз. Баалооңуз IndexedDB-да сакталды жана интернетке кошулганда жөнөтүлөт.');
       } catch (err) {
         console.error('Ошибка записи IndexedDB:', err);
       }
@@ -91,23 +91,12 @@ export function RouteCard({ route, stops, onSelectStop, onUpdateCongestion }: Ro
         radiusMeters: 500,
         onArrive: () => {
           setActiveAlarmStopId(null);
-          alert(`⏰ Будильник сработал! Вы приехали на остановку "${stop.stop_name}"!`);
+          alert(`Чалгыч иштеди! Сиз "${stop.stop_name}" аялдамасына келдиңиз!`);
         }
       });
     }
   };
 
-  // Возвращает текстовое описание загруженности
-  const getCongestionLabel = (status: 'empty' | 'normal' | 'crowded') => {
-    switch (status) {
-      case 'empty':
-        return 'Свободно';
-      case 'normal':
-        return 'Нормально';
-      case 'crowded':
-        return 'Толпа';
-    }
-  };
 
   return (
     <div className="flex flex-col gap-4 select-none">
@@ -142,9 +131,9 @@ export function RouteCard({ route, stops, onSelectStop, onUpdateCongestion }: Ro
         <div className="flex items-center justify-between">
           <span className="text-xs font-semibold uppercase tracking-wider text-[var(--text-secondary)] flex items-center gap-1.5">
             <Users className="w-3.5 h-3.5 text-[var(--accent)]" />
-            Оценить загруженность маршрута
+            Маршруттун толумдугун баалоо
           </span>
-          <span className="text-xs font-bold text-[#10b981] flex items-center gap-1">
+          <span className="text-xs font-bold text-emerald-500 flex items-center gap-1">
             <Sparkles className="w-3 h-3" />
             Карма: +{karma}
           </span>
@@ -159,7 +148,7 @@ export function RouteCard({ route, stops, onSelectStop, onUpdateCongestion }: Ro
                 : 'border-[var(--border-color)] hover:bg-[rgba(255,255,255,0.04)] text-[var(--text-primary)]'
             }`}
           >
-            🟢 Свободно
+            🟢 Бош
           </button>
           <button
             onClick={(e) => handleCongestionClick('normal', e)}
@@ -169,7 +158,7 @@ export function RouteCard({ route, stops, onSelectStop, onUpdateCongestion }: Ro
                 : 'border-[var(--border-color)] hover:bg-[rgba(255,255,255,0.04)] text-[var(--text-primary)]'
             }`}
           >
-            🟡 Нормально
+            🟡 Орточо
           </button>
           <button
             onClick={(e) => handleCongestionClick('crowded', e)}
@@ -179,7 +168,7 @@ export function RouteCard({ route, stops, onSelectStop, onUpdateCongestion }: Ro
                 : 'border-[var(--border-color)] hover:bg-[rgba(255,255,255,0.04)] text-[var(--text-primary)]'
             }`}
           >
-            🔴 Толпа
+            🔴 Толгон
           </button>
         </div>
       </div>
@@ -187,7 +176,7 @@ export function RouteCard({ route, stops, onSelectStop, onUpdateCongestion }: Ro
       {/* Список остановок с гео-будильниками */}
       <div className="flex flex-col gap-2">
         <span className="text-xs font-semibold uppercase tracking-wider text-[var(--text-secondary)] mb-1 px-1">
-          Маршрут следования ({stops.length} остановок)
+          Маршрут жолу ({stops.length} аялдама)
         </span>
 
         <div className="flex flex-col relative pl-6 pr-1 select-none">
@@ -228,7 +217,7 @@ export function RouteCard({ route, stops, onSelectStop, onUpdateCongestion }: Ro
                 {/* Кнопка гео-будильника */}
                 <button
                   onClick={() => toggleGeofenceAlarm(stop)}
-                  title="Установить гео-будильник на эту остановку"
+                  title="Бул аялдамага гео-чалгычты коюу"
                   className={`p-1.5 rounded-lg border transition-all duration-200 cursor-pointer ${
                     isAlarmSet && isActive
                       ? 'bg-rose-950/40 border-rose-500 text-rose-400 font-bold scale-[1.05]'
@@ -238,7 +227,7 @@ export function RouteCard({ route, stops, onSelectStop, onUpdateCongestion }: Ro
                   {isAlarmSet && isActive ? (
                     <div className="flex items-center gap-1">
                       <span className="text-[10px] animate-pulse">
-                        {currentDistance ? `${currentDistance}м` : 'Будильник'}
+                        {currentDistance ? `${currentDistance}м` : 'Чалгыч'}
                       </span>
                       <BellRing className="w-4 h-4 animate-bounce text-rose-400" />
                     </div>

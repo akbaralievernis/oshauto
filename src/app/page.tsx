@@ -62,33 +62,32 @@ export default function HomePage() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-[var(--background)] text-[var(--text-primary)]">
+    <div className="min-h-screen flex flex-col">
       <SiteHeader activePath="home" />
 
       {/* HERO */}
       <section className="relative overflow-hidden border-b border-[var(--border-color)]">
         <div className="absolute inset-0 -z-10 pointer-events-none">
-          <div className="absolute top-[-15%] left-1/2 -translate-x-1/2 w-[800px] h-[800px] rounded-full bg-gradient-to-br from-blue-600/20 via-indigo-600/10 to-transparent blur-3xl" />
-          <div className="absolute bottom-[-20%] right-[-10%] w-[500px] h-[500px] rounded-full bg-emerald-500/10 blur-3xl" />
+          <div className="absolute top-[-15%] left-1/2 -translate-x-1/2 w-[800px] h-[800px] rounded-full bg-gradient-to-br from-blue-500/20 via-indigo-500/10 to-transparent blur-3xl" />
+          <div className="absolute bottom-[-20%] right-[-10%] w-[500px] h-[500px] rounded-full bg-emerald-500/15 blur-3xl" />
         </div>
 
         <div className="mx-auto w-full max-w-6xl px-5 sm:px-8 pt-16 pb-14 md:pt-24 md:pb-20">
           <div className="mx-auto max-w-3xl flex flex-col items-center text-center gap-6">
-            <span className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full border border-blue-500/30 bg-blue-500/10 text-xs font-semibold text-blue-300">
+            <span className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full border border-[var(--accent)]/30 bg-[var(--accent-glow)] text-xs font-semibold text-[var(--accent-strong)]">
               <Sparkles className="w-3.5 h-3.5" />
-              Транспорт Оша в реальном времени
+              Ош транспорту реалдуу убакытта
             </span>
 
             <h1 className="text-[2.25rem] sm:text-5xl md:text-6xl font-black tracking-tight leading-[1.05] text-balance">
-              Доедь до места{' '}
-              <span className="bg-gradient-to-r from-blue-400 via-indigo-400 to-emerald-400 bg-clip-text text-transparent">
-                быстро и без догадок
+              Жетер жайыңызга{' '}
+              <span className="bg-gradient-to-r from-blue-500 via-indigo-500 to-emerald-500 bg-clip-text text-transparent">
+                тез жана так барыңыз
               </span>
             </h1>
 
             <p className="text-base md:text-lg text-[var(--text-secondary)] max-w-xl leading-relaxed">
-              Маршруты городских автобусов, остановки и онлайн-карта города Ош —
-              в одном современном сервисе.
+              Шаардык автобустардын маршруттары, аялдамалары жана транспорттун кыймылы — бир ыңгайлуу жана заманбап кызматта.
             </p>
 
             {/* SEARCH */}
@@ -98,14 +97,15 @@ export default function HomePage() {
                   e.preventDefault();
                   setOpenRoutes(true);
                 }}
-                className="flex items-stretch gap-2 p-1.5 rounded-2xl border border-[var(--border-color)] bg-[var(--bg-card)] backdrop-blur-xl shadow-2xl shadow-black/40"
+                className="flex items-stretch gap-2 p-1.5 rounded-2xl border border-[var(--border-color)] bg-[var(--bg-card)] backdrop-blur-xl shadow-2xl"
+                style={{ boxShadow: '0 20px 60px var(--shadow-color)' }}
               >
                 <div className="flex items-center flex-1 min-w-0 px-3">
                   <Search className="w-5 h-5 text-[var(--text-muted)] shrink-0" />
                   <input
                     value={query}
                     onChange={(e) => setQuery(e.target.value)}
-                    placeholder="Например: 105, Сулейман-Тоо, Анар..."
+                    placeholder="Мисалы: 105, Сулайман-Тоо, Анар..."
                     className="w-full ml-2.5 bg-transparent border-0 outline-none text-sm md:text-base text-[var(--text-primary)] placeholder-[var(--text-muted)] py-3"
                   />
                 </div>
@@ -113,14 +113,14 @@ export default function HomePage() {
                   type="submit"
                   className="px-5 md:px-7 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white text-sm font-bold inline-flex items-center justify-center gap-2 transition-all shadow-lg shadow-blue-600/30 cursor-pointer shrink-0"
                 >
-                  Найти
+                  Издөө
                   <ArrowRight className="w-4 h-4" />
                 </button>
               </form>
 
               {query.trim() && (
                 <div className="mt-2.5 text-xs text-[var(--text-muted)] text-center">
-                  Найдено маршрутов:{' '}
+                  Табылган маршруттар:{' '}
                   <b className="text-[var(--text-primary)]">{filteredRoutes.length}</b>
                 </div>
               )}
@@ -128,9 +128,9 @@ export default function HomePage() {
 
             {/* QUICK STATS */}
             <div className="grid grid-cols-3 gap-3 sm:gap-4 w-full max-w-xl mt-6">
-              <Stat value={`${routes.length}+`} label="Маршрутов" />
-              <Stat value="24/7" label="Доступно" />
-              <Stat value="GPS" label="Реальное время" />
+              <Stat value={`${routes.length}+`} label="Маршрут" />
+              <Stat value="24/7" label="Жеткиликтүү" />
+              <Stat value="GPS" label="Реалдуу убакыт" />
             </div>
           </div>
         </div>
@@ -142,19 +142,19 @@ export default function HomePage() {
           <ActionCard
             icon={<RouteIcon className="w-6 h-6" />}
             tone="blue"
-            title="Маршруты"
-            description="Все городские маршруты, остановки и направления."
+            title="Маршруттар"
+            description="Шаардын бардык маршруттары, аялдамалары жана багыттары."
             onClick={() => setOpenRoutes(true)}
-            cta="Открыть список"
+            cta="Тизмени ачуу"
             badge={`${routes.length}`}
           />
           <ActionCard
             icon={<Bus className="w-6 h-6" />}
             tone="emerald"
-            title="Автобусы"
-            description="Парк, загруженность салонов и движение онлайн."
+            title="Автобустар"
+            description="Иштеп жаткан парк, салондордун толумдугу жана онлайн кыймылы."
             onClick={() => setOpenBuses(true)}
-            cta="Посмотреть"
+            cta="Көрүү"
             badge="LIVE"
           />
         </div>
@@ -163,41 +163,41 @@ export default function HomePage() {
       {/* FEATURES */}
       <section className="mx-auto w-full max-w-6xl px-5 sm:px-8 py-16 md:py-24">
         <SectionHeading
-          eyebrow="Возможности"
-          title="Всё, что нужно пассажиру"
-          subtitle="OshAuto объединяет карту, маршруты и удобные инструменты в одном месте."
+          eyebrow="Мүмкүнчүлүктөр"
+          title="Жүргүнчүгө керектүүнүн бардыгы"
+          subtitle="OshAuto картаны, маршруттарды жана ыңгайлуу куралдарды бир жерге бириктирет."
         />
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mt-10">
           <FeatureCard
             icon={<MapIcon className="w-5 h-5" />}
-            title="Живая карта"
-            text="Маршруты и остановки на интерактивной карте с привязкой к дорогам."
+            title="Тирүү карта"
+            text="Жолдорго байланган маршруттар жана аялдамалар интерактивдүү картада."
           />
           <FeatureCard
             icon={<Bell className="w-5 h-5" />}
-            title="Гео-будильник"
-            text="Не пропустите свою остановку — приложение разбудит уведомлением заранее."
+            title="Гео-чалгыч"
+            text="Өзүңүздүн аялдамаңыздан өтүп кетпеңиз — колдонмо алдын-ала эскертет."
           />
           <FeatureCard
             icon={<Users className="w-5 h-5" />}
-            title="Загруженность"
-            text="Оценки пассажиров о свободных и переполненных автобусах в реальном времени."
+            title="Толумдук"
+            text="Жүргүнчүлөрдүн баалоосу боюнча бош жана толгон автобустар жөнүндө маалымат."
           />
           <FeatureCard
             icon={<Clock className="w-5 h-5" />}
-            title="Интервалы"
-            text="Расписание и интервалы движения для каждого городского маршрута."
+            title="Аралык убакыт"
+            text="Ар бир маршрут үчүн жүрүү графиги жана аралыктар."
           />
           <FeatureCard
             icon={<ShieldCheck className="w-5 h-5" />}
-            title="Безопасно"
-            text="Никаких регистраций, рекламы и слежки — только маршрут и поездка."
+            title="Коопсуз"
+            text="Каттоо, жарнама, көзөмөл жок — болгону маршрут жана сапар."
           />
           <FeatureCard
             icon={<Sparkles className="w-5 h-5" />}
-            title="Современный UI"
-            text="Стильный интерфейс, тёмная тема и полная поддержка мобильных устройств."
+            title="Заманбап интерфейс"
+            text="Стилдүү интерфейс, тема алмаштыруу жана мобилдик түзмөктөр үчүн ыңгайлуу."
           />
         </div>
       </section>
@@ -206,18 +206,18 @@ export default function HomePage() {
       <section className="mx-auto w-full max-w-6xl px-5 sm:px-8 pb-16 md:pb-20">
         <div className="flex items-end justify-between gap-4 mb-6">
           <div>
-            <div className="text-xs font-bold uppercase tracking-widest text-blue-400 mb-2">
-              Маршруты
+            <div className="text-xs font-bold uppercase tracking-widest text-[var(--accent)] mb-2">
+              Маршруттар
             </div>
             <h2 className="text-2xl md:text-3xl font-extrabold tracking-tight">
-              Популярные направления
+              Атактуу багыттар
             </h2>
           </div>
           <button
             onClick={() => setOpenRoutes(true)}
-            className="hidden sm:inline-flex items-center gap-1.5 text-sm font-semibold text-blue-400 hover:text-blue-300 cursor-pointer transition-colors"
+            className="hidden sm:inline-flex items-center gap-1.5 text-sm font-semibold text-[var(--accent)] hover:text-[var(--accent-strong)] cursor-pointer transition-colors"
           >
-            Все маршруты <ArrowRight className="w-4 h-4" />
+            Бардык маршруттар <ArrowRight className="w-4 h-4" />
           </button>
         </div>
 
@@ -234,37 +234,37 @@ export default function HomePage() {
         <div className="sm:hidden mt-5">
           <button
             onClick={() => setOpenRoutes(true)}
-            className="w-full py-3 rounded-xl border border-[var(--border-color)] text-sm font-bold text-[var(--text-primary)] hover:bg-[rgba(255,255,255,0.04)] inline-flex items-center justify-center gap-2 cursor-pointer"
+            className="w-full py-3 rounded-xl border border-[var(--border-color)] text-sm font-bold text-[var(--text-primary)] hover:bg-[var(--bg-elevated)] inline-flex items-center justify-center gap-2 cursor-pointer"
           >
-            Все маршруты <ArrowRight className="w-4 h-4" />
+            Бардык маршруттар <ArrowRight className="w-4 h-4" />
           </button>
         </div>
       </section>
 
       {/* HOW IT WORKS */}
-      <section className="border-y border-[var(--border-color)] bg-[rgba(255,255,255,0.015)]">
+      <section className="border-y border-[var(--border-color)] bg-[var(--bg-elevated)]">
         <div className="mx-auto w-full max-w-6xl px-5 sm:px-8 py-16 md:py-24" id="about">
           <SectionHeading
-            eyebrow="Как пользоваться"
-            title="Три простых шага"
-            subtitle="От поиска маршрута до прибытия на остановку."
+            eyebrow="Кантип колдонуу"
+            title="Үч жөнөкөй кадам"
+            subtitle="Маршрутту издөөдөн аялдамага жетүүгө чейин."
           />
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-10">
             <StepCard
               n={1}
-              title="Найдите маршрут"
-              text="Введите название остановки или номер автобуса в поиске."
+              title="Маршрутту табыңыз"
+              text="Издөө талаасына аялдамаңыздын атын же автобустун номерин жазыңыз."
             />
             <StepCard
               n={2}
-              title="Откройте на карте"
-              text="Увидите все остановки и движение транспорта в реальном времени."
+              title="Картадан ачыңыз"
+              text="Бардык аялдамаларды жана транспорттун кыймылын реалдуу убакытта көрөсүз."
             />
             <StepCard
               n={3}
-              title="Доберитесь без догадок"
-              text="Используйте гео-будильник, чтобы выйти именно там, где нужно."
+              title="Так барыңыз"
+              text="Гео-чалгычты колдонуп, керектүү аялдамада чыгыңыз."
             />
           </div>
         </div>
@@ -274,8 +274,8 @@ export default function HomePage() {
       <section className="mx-auto w-full max-w-3xl px-5 sm:px-8 py-16 md:py-24" id="faq">
         <SectionHeading
           eyebrow="FAQ"
-          title="Частые вопросы"
-          subtitle="Кратко о том, как устроен сервис."
+          title="Көп берилген суроолор"
+          subtitle="Кызмат кантип иштээри жөнүндө кыска."
         />
 
         <div className="flex flex-col gap-3 mt-10">
@@ -293,22 +293,22 @@ export default function HomePage() {
 
       {/* CONTACTS + FEEDBACK */}
       <section
-        className="border-t border-[var(--border-color)] bg-[rgba(255,255,255,0.015)]"
+        className="border-t border-[var(--border-color)] bg-[var(--bg-elevated)]"
         id="contacts"
       >
         <div className="mx-auto w-full max-w-6xl px-5 sm:px-8 py-16 md:py-24">
           <SectionHeading
-            eyebrow="Связаться"
-            title="Контакты и обратная связь"
-            subtitle="Заметили ошибку или хотите предложить улучшение? Напишите нам."
+            eyebrow="Байланыш"
+            title="Байланыш жана кайтарым байланыш"
+            subtitle="Катаны байкадыңызбы же сунушуңуз барбы? Бизге жазыңыз."
           />
 
           <div className="grid grid-cols-1 lg:grid-cols-5 gap-5 mt-10">
             <div className="lg:col-span-2 flex flex-col gap-3">
               <ContactRow
                 icon={<MapPin className="w-4 h-4" />}
-                label="Адрес"
-                value="г. Ош, Кыргызстан"
+                label="Дарек"
+                value="Ош ш., Кыргызстан"
               />
               <ContactRow
                 icon={<Phone className="w-4 h-4" />}
@@ -318,16 +318,16 @@ export default function HomePage() {
               />
               <ContactRow
                 icon={<Mail className="w-4 h-4" />}
-                label="Электронная почта"
+                label="Электрондук почта"
                 value="info@oshauto.kg"
                 href="mailto:info@oshauto.kg"
               />
-              <div className="p-4 rounded-2xl border border-blue-500/20 bg-blue-500/5">
-                <div className="text-xs font-bold uppercase tracking-widest text-blue-300 mb-2">
-                  Перевозчикам
+              <div className="p-4 rounded-2xl border border-[var(--accent)]/20 bg-[var(--accent-glow)]">
+                <div className="text-xs font-bold uppercase tracking-widest text-[var(--accent-strong)] mb-2">
+                  Ташуучуларга
                 </div>
                 <p className="text-xs text-[var(--text-secondary)] leading-relaxed">
-                  Если вы парк или водитель — подключите свои GPS-данные через админ-панель и появитесь на карте города.
+                  Эгер сиз ташуучу болсоңуз — өзүңүздүн GPS-маалыматыңызды админ-панель аркылуу кошуп, шаардын картасына чыгыңыз.
                 </p>
               </div>
             </div>
@@ -345,8 +345,8 @@ export default function HomePage() {
       <Modal
         isOpen={openRoutes}
         onClose={() => setOpenRoutes(false)}
-        title="Городские маршруты"
-        subtitle={`Всего: ${routes.length}. Нажмите, чтобы открыть на карте.`}
+        title="Шаардык маршруттар"
+        subtitle={`Бардыгы: ${routes.length}. Картадан ачуу үчүн басыңыз.`}
         size="md"
       >
         <div className="flex flex-col gap-3">
@@ -355,13 +355,13 @@ export default function HomePage() {
             <input
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              placeholder="Поиск по номеру или направлению..."
-              className="w-full pl-9 pr-3 py-2.5 text-sm rounded-xl bg-[rgba(255,255,255,0.03)] border border-[var(--border-color)] outline-none focus:border-blue-500"
+              placeholder="Номер же багыт боюнча издөө..."
+              className="w-full pl-9 pr-3 py-2.5 text-sm rounded-xl bg-[var(--bg-elevated)] border border-[var(--border-color)] outline-none focus:border-[var(--accent)]"
             />
           </div>
 
           {filteredRoutes.length === 0 ? (
-            <EmptyState text="Ничего не найдено. Попробуйте другой запрос." />
+            <EmptyState text="Эч нерсе табылган жок. Башка суроону жазып көрүңүз." />
           ) : (
             <div className="flex flex-col gap-2">
               {filteredRoutes.map((r) => (
@@ -382,8 +382,8 @@ export default function HomePage() {
       <Modal
         isOpen={openBuses}
         onClose={() => setOpenBuses(false)}
-        title="Автобусы города Ош"
-        subtitle="Парк и текущая загруженность"
+        title="Ош шаарынын автобустары"
+        subtitle="Парк жана учурдагы толумдук"
         size="md"
       >
         <BusesModalContent
@@ -432,36 +432,37 @@ function ActionCard({
   badge?: string;
 }) {
   const isBlue = tone === 'blue';
-  const cardBg = isBlue
-    ? 'from-blue-600/15 via-blue-600/5 to-indigo-600/10 border-blue-500/30 hover:border-blue-500/60'
-    : 'from-emerald-600/15 via-emerald-600/5 to-teal-600/10 border-emerald-500/30 hover:border-emerald-500/60';
-  const iconBg = isBlue ? 'bg-blue-500/15 text-blue-300' : 'bg-emerald-500/15 text-emerald-300';
-  const ctaColor = isBlue ? 'text-blue-300' : 'text-emerald-300';
+  const gradient = isBlue
+    ? 'from-blue-500/15 via-blue-500/5 to-indigo-500/10'
+    : 'from-emerald-500/15 via-emerald-500/5 to-teal-500/10';
+  const borderHover = isBlue ? 'hover:border-blue-500/50' : 'hover:border-emerald-500/50';
+  const iconBg = isBlue
+    ? 'bg-blue-500/15 text-blue-600 dark:text-blue-300'
+    : 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-300';
+  const ctaColor = isBlue ? 'text-blue-600 dark:text-blue-300' : 'text-emerald-600 dark:text-emerald-300';
+  const badgeBg = isBlue
+    ? 'bg-blue-500/15 text-blue-600 dark:text-blue-300'
+    : 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-300';
 
   return (
     <button
       onClick={onClick}
-      className={`group text-left p-5 md:p-6 rounded-2xl border bg-gradient-to-br ${cardBg} backdrop-blur-md transition-all cursor-pointer hover:-translate-y-0.5 active:translate-y-0 shadow-xl shadow-black/40`}
+      className={`group text-left p-5 md:p-6 rounded-2xl border border-[var(--border-color)] ${borderHover} bg-gradient-to-br ${gradient} backdrop-blur-md transition-all cursor-pointer hover:-translate-y-0.5 active:translate-y-0 shadow-xl`}
+      style={{ boxShadow: '0 12px 40px var(--shadow-color)' }}
     >
       <div className="flex items-start justify-between gap-3 mb-5">
         <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${iconBg}`}>
           {icon}
         </div>
         {badge && (
-          <span
-            className={`px-2.5 py-1 rounded-full text-[10px] font-extrabold tracking-widest ${
-              isBlue ? 'bg-blue-500/15 text-blue-300' : 'bg-emerald-500/15 text-emerald-300'
-            }`}
-          >
+          <span className={`px-2.5 py-1 rounded-full text-[10px] font-extrabold tracking-widest ${badgeBg}`}>
             {badge}
           </span>
         )}
       </div>
       <h3 className="text-xl font-extrabold text-[var(--text-primary)]">{title}</h3>
       <p className="text-sm text-[var(--text-secondary)] mt-2 leading-relaxed">{description}</p>
-      <div
-        className={`flex items-center justify-between mt-5 pt-4 border-t border-[var(--border-color)] text-xs font-bold uppercase tracking-widest ${ctaColor}`}
-      >
+      <div className={`flex items-center justify-between mt-5 pt-4 border-t border-[var(--border-color)] text-xs font-bold uppercase tracking-widest ${ctaColor}`}>
         <span>{cta}</span>
         <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
       </div>
@@ -480,7 +481,7 @@ function SectionHeading({
 }) {
   return (
     <div className="mx-auto max-w-2xl text-center">
-      <div className="text-xs font-bold uppercase tracking-widest text-blue-400 mb-3">
+      <div className="text-xs font-bold uppercase tracking-widest text-[var(--accent)] mb-3">
         {eyebrow}
       </div>
       <h2 className="text-2xl md:text-4xl font-extrabold tracking-tight">{title}</h2>
@@ -504,7 +505,7 @@ function FeatureCard({
 }) {
   return (
     <div className="p-5 md:p-6 rounded-2xl border border-[var(--border-color)] bg-[var(--bg-card)] backdrop-blur-md hover:border-[var(--border-hover)] transition-all">
-      <div className="w-11 h-11 rounded-xl bg-blue-500/10 text-blue-300 flex items-center justify-center mb-4">
+      <div className="w-11 h-11 rounded-xl bg-[var(--accent-glow)] text-[var(--accent)] flex items-center justify-center mb-4">
         {icon}
       </div>
       <h3 className="text-base font-bold text-[var(--text-primary)]">{title}</h3>
@@ -538,9 +539,9 @@ function RoutePreviewCard({ route, onView }: { route: Route; onView: () => void 
 
       <button
         onClick={onView}
-        className="w-full py-2.5 rounded-xl border border-[var(--border-color)] text-sm font-semibold hover:bg-[rgba(59,130,246,0.08)] hover:border-blue-500/40 hover:text-blue-300 inline-flex items-center justify-center gap-2 cursor-pointer transition-all"
+        className="w-full py-2.5 rounded-xl border border-[var(--border-color)] text-sm font-semibold hover:bg-[var(--accent-glow)] hover:border-[var(--accent)]/40 hover:text-[var(--accent)] inline-flex items-center justify-center gap-2 cursor-pointer transition-all"
       >
-        Открыть на карте
+        Картадан ачуу
         <ArrowRight className="w-4 h-4" />
       </button>
     </div>
@@ -550,11 +551,11 @@ function RoutePreviewCard({ route, onView }: { route: Route; onView: () => void 
 function StepCard({ n, title, text }: { n: number; title: string; text: string }) {
   return (
     <div className="relative p-6 rounded-2xl border border-[var(--border-color)] bg-[var(--bg-card)] backdrop-blur-md overflow-hidden">
-      <div className="absolute top-3 right-4 text-6xl font-black text-blue-500/10 select-none leading-none">
+      <div className="absolute top-3 right-4 text-6xl font-black text-[var(--accent)] opacity-[0.08] select-none leading-none">
         0{n}
       </div>
       <div className="relative">
-        <div className="w-9 h-9 rounded-xl bg-blue-500/15 text-blue-300 flex items-center justify-center text-sm font-extrabold mb-3">
+        <div className="w-9 h-9 rounded-xl bg-[var(--accent-glow)] text-[var(--accent)] flex items-center justify-center text-sm font-extrabold mb-3">
           {n}
         </div>
         <h3 className="text-base font-bold">{title}</h3>
@@ -579,14 +580,14 @@ function FaqItem({
     <div className="rounded-2xl border border-[var(--border-color)] bg-[var(--bg-card)] overflow-hidden">
       <button
         onClick={onToggle}
-        className="w-full p-4 md:p-5 flex items-center justify-between gap-4 text-left cursor-pointer hover:bg-[rgba(255,255,255,0.025)]"
+        className="w-full p-4 md:p-5 flex items-center justify-between gap-4 text-left cursor-pointer hover:bg-[var(--bg-elevated)]"
       >
         <span className="text-sm md:text-base font-bold text-[var(--text-primary)]">
           {question}
         </span>
         <span
           className={`w-7 h-7 rounded-lg border border-[var(--border-color)] flex items-center justify-center text-[var(--text-secondary)] transition-transform shrink-0 ${
-            open ? 'rotate-45 text-blue-300 border-blue-500/40 bg-blue-500/10' : ''
+            open ? 'rotate-45 text-[var(--accent)] border-[var(--accent)]/40 bg-[var(--accent-glow)]' : ''
           }`}
         >
           <Plus className="w-4 h-4" />
@@ -614,7 +615,7 @@ function ContactRow({
 }) {
   const content = (
     <div className="flex items-center gap-3 p-3.5 rounded-xl border border-[var(--border-color)] bg-[var(--bg-card)] hover:border-[var(--border-hover)] transition-all">
-      <div className="w-10 h-10 rounded-lg bg-blue-500/10 text-blue-300 flex items-center justify-center shrink-0">
+      <div className="w-10 h-10 rounded-lg bg-[var(--accent-glow)] text-[var(--accent)] flex items-center justify-center shrink-0">
         {icon}
       </div>
       <div className="min-w-0 flex-1">
@@ -627,13 +628,7 @@ function ContactRow({
       </div>
     </div>
   );
-  return href ? (
-    <a href={href} className="block">
-      {content}
-    </a>
-  ) : (
-    content
-  );
+  return href ? <a href={href} className="block">{content}</a> : content;
 }
 
 function FeedbackForm() {
@@ -667,12 +662,13 @@ function FeedbackForm() {
     <form
       id="feedback"
       onSubmit={handleSubmit}
-      className="p-5 md:p-7 rounded-2xl border border-[var(--border-color)] bg-[var(--bg-card)] backdrop-blur-md flex flex-col gap-4 shadow-xl shadow-black/30"
+      className="p-5 md:p-7 rounded-2xl border border-[var(--border-color)] bg-[var(--bg-card)] backdrop-blur-md flex flex-col gap-4"
+      style={{ boxShadow: '0 12px 40px var(--shadow-color)' }}
     >
       <div>
-        <h3 className="text-lg md:text-xl font-extrabold">Форма обратной связи</h3>
+        <h3 className="text-lg md:text-xl font-extrabold">Кайтарым байланыш формасы</h3>
         <p className="text-sm text-[var(--text-secondary)] mt-1">
-          Сообщение попадёт прямо к команде проекта.
+          Кабарыңыз түз долбоордун командасына барат.
         </p>
       </div>
 
@@ -680,23 +676,23 @@ function FeedbackForm() {
         <input
           value={name}
           onChange={(e) => setName(e.target.value)}
-          placeholder="Ваше имя"
-          className="w-full px-3.5 py-2.5 text-sm rounded-xl bg-[rgba(255,255,255,0.03)] border border-[var(--border-color)] outline-none focus:border-blue-500 transition-colors"
+          placeholder="Атыңыз"
+          className="w-full px-3.5 py-2.5 text-sm rounded-xl bg-[var(--bg-elevated)] border border-[var(--border-color)] outline-none focus:border-[var(--accent)] transition-colors"
         />
         <input
           value={contact}
           onChange={(e) => setContact(e.target.value)}
-          placeholder="Телефон или email"
-          className="w-full px-3.5 py-2.5 text-sm rounded-xl bg-[rgba(255,255,255,0.03)] border border-[var(--border-color)] outline-none focus:border-blue-500 transition-colors"
+          placeholder="Телефон же email"
+          className="w-full px-3.5 py-2.5 text-sm rounded-xl bg-[var(--bg-elevated)] border border-[var(--border-color)] outline-none focus:border-[var(--accent)] transition-colors"
         />
       </div>
 
       <textarea
         value={message}
         onChange={(e) => setMessage(e.target.value)}
-        placeholder="Опишите ваше предложение или проблему..."
+        placeholder="Сунушуңузду же көйгөйүңүздү жазыңыз..."
         rows={4}
-        className="w-full px-3.5 py-2.5 text-sm rounded-xl bg-[rgba(255,255,255,0.03)] border border-[var(--border-color)] outline-none focus:border-blue-500 resize-none transition-colors"
+        className="w-full px-3.5 py-2.5 text-sm rounded-xl bg-[var(--bg-elevated)] border border-[var(--border-color)] outline-none focus:border-[var(--accent)] resize-none transition-colors"
       />
 
       <button
@@ -705,13 +701,13 @@ function FeedbackForm() {
         className="w-full py-3 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white text-sm font-bold flex items-center justify-center gap-2 cursor-pointer shadow-lg shadow-blue-600/30 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
       >
         {sending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
-        Отправить отзыв
+        Жөнөтүү
       </button>
 
       {sent && (
-        <div className="flex items-center gap-2 px-3 py-2.5 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 text-sm font-semibold">
+        <div className="flex items-center gap-2 px-3 py-2.5 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-600 dark:text-emerald-300 text-sm font-semibold">
           <CheckCircle2 className="w-4 h-4" />
-          Спасибо! Ваш отзыв принят.
+          Рахмат! Пикириңиз кабыл алынды.
         </div>
       )}
     </form>
@@ -763,25 +759,25 @@ function BusesModalContent({ onPickRoute }: { onPickRoute: (routeId: string) => 
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="p-3.5 rounded-xl bg-blue-500/5 border border-blue-500/20 text-sm text-[var(--text-secondary)] flex items-start gap-3">
-        <Bus className="w-4 h-4 text-blue-300 mt-0.5 shrink-0" />
+      <div className="p-3.5 rounded-xl bg-[var(--accent-glow)] border border-[var(--accent)]/20 text-sm text-[var(--text-secondary)] flex items-start gap-3">
+        <Bus className="w-4 h-4 text-[var(--accent)] mt-0.5 shrink-0" />
         <span>
-          Городские автобусы Оша работают по{' '}
-          <b className="text-[var(--text-primary)]">{routes.length}</b> маршрутам.
-          Нажмите на маршрут, чтобы увидеть автобусы на карте.
+          Ош шаарынын автобустары{' '}
+          <b className="text-[var(--text-primary)]">{routes.length}</b> маршрутта иштейт.
+          Картадагы автобустарды көрүү үчүн маршрутту басыңыз.
         </span>
       </div>
 
       <div className="grid grid-cols-2 gap-2.5">
-        <BusInfoCell tone="emerald" label="Свободно" hint="зелёный индикатор" />
-        <BusInfoCell tone="amber" label="Нормально" hint="жёлтый индикатор" />
-        <BusInfoCell tone="rose" label="Толпа" hint="красный индикатор" />
-        <BusInfoCell tone="blue" label="GPS LIVE" hint="онлайн-движение" />
+        <BusInfoCell tone="emerald" label="Бош" hint="жашыл индикатор" />
+        <BusInfoCell tone="amber" label="Орточо" hint="сары индикатор" />
+        <BusInfoCell tone="rose" label="Толгон" hint="кызыл индикатор" />
+        <BusInfoCell tone="blue" label="GPS LIVE" hint="онлайн-кыймыл" />
       </div>
 
       <div className="border-t border-[var(--border-color)] pt-3">
         <div className="text-xs font-extrabold uppercase tracking-widest text-[var(--text-muted)] mb-3">
-          Парк автобусов
+          Автобус паркы
         </div>
         <div className="flex flex-col gap-2">
           {routes.map((r) => (
@@ -803,10 +799,10 @@ function BusInfoCell({
   hint: string;
 }) {
   const colors = {
-    emerald: 'border-emerald-500/30 bg-emerald-500/10 text-emerald-200',
-    amber: 'border-amber-500/30 bg-amber-500/10 text-amber-200',
-    rose: 'border-rose-500/30 bg-rose-500/10 text-rose-200',
-    blue: 'border-blue-500/30 bg-blue-500/10 text-blue-200'
+    emerald: 'border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-200',
+    amber: 'border-amber-500/30 bg-amber-500/10 text-amber-700 dark:text-amber-200',
+    rose: 'border-rose-500/30 bg-rose-500/10 text-rose-700 dark:text-rose-200',
+    blue: 'border-blue-500/30 bg-blue-500/10 text-blue-700 dark:text-blue-200'
   }[tone];
 
   const dot = {
@@ -829,23 +825,23 @@ function BusInfoCell({
 
 const FAQ = [
   {
-    q: 'Сервис платный?',
-    a: 'Нет. OshAuto полностью бесплатен для пассажиров.'
+    q: 'Кызмат акылуубу?',
+    a: 'Жок. OshAuto жүргүнчүлөр үчүн толугу менен бекер.'
   },
   {
-    q: 'Нужно ли регистрироваться?',
-    a: 'Нет, регистрация не требуется. Просто откройте сайт и пользуйтесь.'
+    q: 'Каттоодон өтүү керекпи?',
+    a: 'Жок, каттоо талап кылынбайт. Сайтты ачыңыз да пайдаланыңыз.'
   },
   {
-    q: 'Что показывает онлайн-карта?',
-    a: 'Маршруты, остановки и движение городского транспорта Оша в реальном времени, если данные GPS поступают с автобусов.'
+    q: 'Онлайн-карта эмнени көрсөтөт?',
+    a: 'Маршруттарды, аялдамаларды жана автобустардан GPS-маалымат келип турса, шаардык транспорттун кыймылын реалдуу убакытта.'
   },
   {
-    q: 'Можно ли добавить свой маршрут?',
-    a: 'Да. Перейдите в админ-панель, добавьте остановки кликом на карте или вручную по координатам, сохраните — маршрут появится на сайте.'
+    q: 'Өзүмдүн маршрутумду кошсо болобу?',
+    a: 'Ооба. Админ-панелге өтүп, картага басып же координаттарды кол менен жазып аялдамаларды кошуңуз, сактаңыз — маршрут сайтта пайда болот.'
   },
   {
-    q: 'Как работает гео-будильник?',
-    a: 'Откройте маршрут, выберите остановку прибытия и включите будильник — приложение уведомит вас при приближении.'
+    q: 'Гео-чалгыч кантип иштейт?',
+    a: 'Маршрутту ачып, баруучу аялдаманы тандап, чалгычты кошуңуз — жакындаганда колдонмо сизди эскертет.'
   }
 ];

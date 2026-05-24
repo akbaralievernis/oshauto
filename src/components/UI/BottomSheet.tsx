@@ -9,7 +9,7 @@ interface BottomSheetProps {
   isOpen?: boolean;
 }
 
-export function BottomSheet({ children, title = 'Маршруты Оша' }: BottomSheetProps) {
+export function BottomSheet({ children, title = 'Ош маршруттары' }: BottomSheetProps) {
   const constraintsRef = useRef<HTMLDivElement>(null);
   const controls = useAnimation();
 

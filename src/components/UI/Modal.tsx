@@ -63,8 +63,8 @@ export function Modal({ isOpen, onClose, title, subtitle, children, size = 'md' 
                 </div>
                 <button
                   onClick={onClose}
-                  aria-label="Закрыть"
-                  className="p-2 rounded-lg border border-[var(--border-color)] hover:bg-[rgba(255,255,255,0.04)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-all shrink-0 cursor-pointer"
+                  aria-label="Жабуу"
+                  className="p-2 rounded-lg border border-[var(--border-color)] hover:bg-[var(--bg-elevated)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-all shrink-0 cursor-pointer"
                 >
                   <X className="w-4 h-4" />
                 </button>

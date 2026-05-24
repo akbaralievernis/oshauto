@@ -1,8 +1,9 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { Bus, Settings, Menu, X } from 'lucide-react';
+import { Bus, Settings, Menu, X, Sun, Moon } from 'lucide-react';
+import { useStore } from '@/store/useStore';
 
 interface SiteHeaderProps {
   activePath?: 'home' | 'routes' | 'map' | 'contacts' | 'admin';
@@ -10,6 +11,16 @@ interface SiteHeaderProps {
 
 export function SiteHeader({ activePath = 'home' }: SiteHeaderProps) {
   const [open, setOpen] = useState(false);
+  const { theme, setTheme } = useStore();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  const toggleTheme = () => {
+    setTheme(theme === 'dark' ? 'light' : 'dark');
+  };
 
   const link = (key: string, href: string, label: string) => (
     <Link
@@ -17,8 +28,8 @@ export function SiteHeader({ activePath = 'home' }: SiteHeaderProps) {
       onClick={() => setOpen(false)}
       className={`text-sm font-semibold transition-colors px-3.5 py-2 rounded-lg ${
         activePath === key
-          ? 'text-[var(--text-primary)] bg-[rgba(59,130,246,0.12)]'
-          : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[rgba(255,255,255,0.04)]'
+          ? 'text-[var(--text-primary)] bg-[var(--accent-glow)]'
+          : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-elevated)]'
       }`}
     >
       {label}
@@ -26,7 +37,7 @@ export function SiteHeader({ activePath = 'home' }: SiteHeaderProps) {
   );
 
   return (
-    <header className="sticky top-0 z-40 backdrop-blur-xl bg-[rgba(13,13,18,0.75)] border-b border-[var(--border-color)]">
+    <header className="sticky top-0 z-40 backdrop-blur-xl bg-[var(--bg-primary)] border-b border-[var(--border-color)]">
       <div className="mx-auto w-full max-w-6xl px-5 sm:px-8 h-16 flex items-center justify-between gap-4">
         <Link href="/" className="flex items-center gap-2.5 shrink-0">
           <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center shadow-lg shadow-blue-500/25">
@@ -37,19 +48,29 @@ export function SiteHeader({ activePath = 'home' }: SiteHeaderProps) {
               OshAuto
             </span>
             <span className="text-[10px] text-[var(--text-muted)] font-bold tracking-widest uppercase mt-1">
-              Транспорт Оша
+              Ош транспорту
             </span>
           </div>
         </Link>
 
         <nav className="hidden md:flex items-center gap-1">
-          {link('home', '/', 'Главная')}
-          {link('routes', '/routes', 'Маршруты')}
+          {link('home', '/', 'Башкы бет')}
+          {link('routes', '/routes', 'Маршруттар')}
           {link('map', '/map', 'Карта')}
-          {link('contacts', '/#contacts', 'Контакты')}
+          {link('contacts', '/#contacts', 'Байланыш')}
         </nav>
 
         <div className="flex items-center gap-2">
+          {mounted && (
+            <button
+              onClick={toggleTheme}
+              title={theme === 'dark' ? 'Жарык тема' : 'Караңгы тема'}
+              aria-label="Тема"
+              className="p-2 rounded-lg border border-[var(--border-color)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:border-[var(--border-hover)] transition-all cursor-pointer"
+            >
+              {theme === 'dark' ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+            </button>
+          )}
           <Link
             href="/admin"
             className="hidden sm:inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-xs font-bold border border-[var(--border-color)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:border-[var(--border-hover)] transition-all"
@@ -69,10 +90,10 @@ export function SiteHeader({ activePath = 'home' }: SiteHeaderProps) {
 
       {open && (
         <div className="md:hidden border-t border-[var(--border-color)] px-4 py-3 flex flex-col gap-1 bg-[var(--bg-solid)]">
-          {link('home', '/', 'Главная')}
-          {link('routes', '/routes', 'Маршруты')}
+          {link('home', '/', 'Башкы бет')}
+          {link('routes', '/routes', 'Маршруттар')}
           {link('map', '/map', 'Карта')}
-          {link('contacts', '/#contacts', 'Контакты')}
+          {link('contacts', '/#contacts', 'Байланыш')}
           {link('admin', '/admin', 'Админ-панель')}
         </div>
       )}

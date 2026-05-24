@@ -1,6 +1,6 @@
 'use client';
 
-import React, { Suspense, useEffect, useMemo, useState } from 'react';
+import React, { Suspense, useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { MapContainer } from '@/components/Map/MapContainer';
@@ -11,7 +11,7 @@ import { useSupabaseRealtime } from '@/hooks/useSupabaseRealtime';
 import { useStore } from '@/store/useStore';
 import { Route } from '@/lib/supabase';
 import { getAllRoutes, getStopsForRoute } from '@/lib/customRoutes';
-import { Sun, SunMoon, ArrowLeft, ShieldAlert, Home } from 'lucide-react';
+import { Sun, Moon, ArrowLeft, ShieldAlert, Home } from 'lucide-react';
 
 function MapPageInner() {
   const router = useRouter();
@@ -30,7 +30,6 @@ function MapPageInner() {
 
   const [routes, setRoutes] = useState<Route[]>([]);
 
-  // Загрузка маршрутов
   useEffect(() => {
     const update = () => setRoutes(getAllRoutes());
     update();
@@ -38,7 +37,6 @@ function MapPageInner() {
     return () => window.removeEventListener('oshauto:routes-updated', update);
   }, []);
 
-  // Авто-выбор маршрута по query-параметру
   useEffect(() => {
     if (!presetRouteId || routes.length === 0) return;
     const route = routes.find((r) => r.route_id === presetRouteId);
@@ -48,24 +46,16 @@ function MapPageInner() {
     }
   }, [presetRouteId, routes]);
 
-  // Подписка на realtime транспорта
   const { vehicles } = useSupabaseRealtime(
     selectedRoute ? selectedRoute.route_short_name : null
   );
 
-  // Регистрация Service Worker
   useEffect(() => {
     if (typeof window !== 'undefined' && 'serviceWorker' in navigator) {
-      navigator.serviceWorker
-        .register('/sw.js')
-        .then((reg) => console.log('[PWA] SW зарегистрирован:', reg.scope))
-        .catch(() => {
-          // SW отсутствует — не критично
-        });
+      navigator.serviceWorker.register('/sw.js').catch(() => {});
     }
   }, []);
 
-  // Применение темы
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme);
   }, [theme]);
@@ -81,7 +71,7 @@ function MapPageInner() {
   };
 
   const toggleTheme = () => {
-    setTheme(theme === 'dark' ? 'outdoor' : 'dark');
+    setTheme(theme === 'dark' ? 'light' : 'dark');
   };
 
   const handleRouteFoundByAI = (routeId: string) => {
@@ -101,12 +91,11 @@ function MapPageInner() {
         />
       </div>
 
-      {/* Шапка */}
       <div className="absolute top-4 left-4 right-4 z-20 max-w-md mx-auto pointer-events-none flex flex-col gap-3">
         <div className="w-full glass-panel p-3 pointer-events-auto flex items-center justify-between gap-3">
           <Link
             href="/"
-            className="flex items-center gap-2 px-2 py-1.5 rounded-lg hover:bg-[rgba(255,255,255,0.04)] cursor-pointer transition-colors"
+            className="flex items-center gap-2 px-2 py-1.5 rounded-lg hover:bg-[var(--bg-elevated)] cursor-pointer transition-colors"
           >
             <Home className="w-4 h-4 text-[var(--text-secondary)]" />
             <div className="flex flex-col">
@@ -114,21 +103,17 @@ function MapPageInner() {
                 OshAuto
               </span>
               <span className="text-[9px] text-[var(--text-muted)] font-bold tracking-widest uppercase mt-0.5">
-                На главную
+                Башкы бетке
               </span>
             </div>
           </Link>
 
           <button
             onClick={toggleTheme}
-            title={theme === 'dark' ? 'Уличный режим (контраст)' : 'Тёмная тема'}
-            className="p-2 rounded-lg border border-[var(--border-color)] hover:bg-[rgba(255,255,255,0.03)] text-[var(--text-primary)] cursor-pointer transition-all"
+            title={theme === 'dark' ? 'Жарык тема' : 'Караңгы тема'}
+            className="p-2 rounded-lg border border-[var(--border-color)] hover:bg-[var(--bg-elevated)] text-[var(--text-primary)] cursor-pointer transition-all"
           >
-            {theme === 'dark' ? (
-              <SunMoon className="w-4 h-4 text-amber-400" />
-            ) : (
-              <Sun className="w-4 h-4 text-black" />
-            )}
+            {theme === 'dark' ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
           </button>
         </div>
 
@@ -139,20 +124,19 @@ function MapPageInner() {
         )}
       </div>
 
-      {/* BottomSheet */}
       <BottomSheet
         title={
-          selectedRoute ? `Маршрут ${selectedRoute.route_short_name}` : 'Маршруты Оша'
+          selectedRoute ? `Маршрут ${selectedRoute.route_short_name}` : 'Ош маршруттары'
         }
       >
         {selectedRoute ? (
           <div className="flex flex-col gap-4">
             <button
               onClick={handleBackToList}
-              className="flex items-center gap-2 text-xs font-bold text-[var(--text-secondary)] hover:text-[var(--text-primary)] self-start py-1.5 px-3 rounded-lg border border-[var(--border-color)] hover:bg-[rgba(255,255,255,0.02)] cursor-pointer transition-all"
+              className="flex items-center gap-2 text-xs font-bold text-[var(--text-secondary)] hover:text-[var(--text-primary)] self-start py-1.5 px-3 rounded-lg border border-[var(--border-color)] hover:bg-[var(--bg-elevated)] cursor-pointer transition-all"
             >
               <ArrowLeft className="w-3.5 h-3.5" />
-              Назад ко всем маршрутам
+              Бардык маршруттарга кайтуу
             </button>
 
             <RouteCard route={selectedRoute} stops={stops} />
@@ -160,7 +144,7 @@ function MapPageInner() {
         ) : (
           <div className="flex flex-col gap-2.5">
             <div className="text-xs font-bold uppercase tracking-wider text-[var(--text-secondary)] mb-1 px-1">
-              Выберите направление
+              Багытты тандаңыз
             </div>
 
             {routes.map((route) => (
@@ -180,7 +164,7 @@ function MapPageInner() {
                     {route.route_short_name}
                   </span>
                   <div className="flex flex-col gap-0.5">
-                    <span className="text-sm font-bold text-[var(--text-primary)] group-hover:text-[var(--accent-light)] transition-colors">
+                    <span className="text-sm font-bold text-[var(--text-primary)] group-hover:text-[var(--accent)] transition-colors">
                       {route.route_long_name}
                     </span>
                     {route.route_desc && (
@@ -194,9 +178,9 @@ function MapPageInner() {
             ))}
 
             {routes.length === 0 && (
-              <div className="mt-4 p-4 rounded-lg border border-amber-950/30 bg-amber-950/10 text-amber-500 text-xs font-medium leading-relaxed flex items-start gap-2">
+              <div className="mt-4 p-4 rounded-lg border border-amber-500/30 bg-amber-500/10 text-amber-700 dark:text-amber-300 text-xs font-medium leading-relaxed flex items-start gap-2">
                 <ShieldAlert className="w-4 h-4 shrink-0 mt-0.5" />
-                Маршруты пока не настроены. Добавьте их в админ-панели.
+                Маршруттар азырынча конфигурацияланган эмес. Аларды админ-панелден кошуңуз.
               </div>
             )}
           </div>
@@ -211,7 +195,7 @@ export default function MapPage() {
     <Suspense
       fallback={
         <div className="w-screen h-screen flex items-center justify-center bg-[var(--background)] text-[var(--text-muted)] text-sm">
-          Загрузка карты...
+          Карта жүктөлүп жатат...
         </div>
       }
     >

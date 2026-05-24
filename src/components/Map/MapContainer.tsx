@@ -26,6 +26,7 @@ export function MapContainer({
   const [mapType, setMapType] = useState<'mapbox' | 'leaflet' | 'none'>('none');
   const [isClient, setIsClient] = useState(false);
   const [routePath, setRoutePath] = useState<[number, number][]>([]);
+  const tileLayerRef = useRef<any>(null);
 
   // Автоматический расчет сглаженной траектории по дорогам для пассажирской карты
   useEffect(() => {
@@ -77,6 +78,35 @@ export function MapContainer({
   useEffect(() => {
     setIsClient(true);
   }, []);
+
+  // Переключение тайлов при смене темы
+  useEffect(() => {
+    if (mapType !== 'leaflet' || !leafletMapRef.current) return;
+
+    const handler = () => {
+      const map = leafletMapRef.current;
+      if (!map) return;
+      import('leaflet').then((LModule) => {
+        const L = LModule.default;
+        const currentTheme = document.documentElement.getAttribute('data-theme');
+        const tileUrl = currentTheme === 'light'
+          ? 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png'
+          : 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png';
+        if (tileLayerRef.current) {
+          map.removeLayer(tileLayerRef.current);
+        }
+        tileLayerRef.current = L.tileLayer(tileUrl, {
+          attribution: '&copy; OpenStreetMap contributors &copy; CARTO',
+          subdomains: 'abcd',
+          maxZoom: 20
+        }).addTo(map);
+      });
+    };
+
+    const observer = new MutationObserver(handler);
+    observer.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+    return () => observer.disconnect();
+  }, [mapType]);
 
   // Инициализация картографического провайдера (Mapbox vs Leaflet)
   useEffect(() => {
@@ -136,8 +166,13 @@ export function MapContainer({
           13
         );
 
-        // Используем темные премиум тайлы CartoDB Dark Matter
-        L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+        // Тайлы зависят от темы
+        const currentTheme = document.documentElement.getAttribute('data-theme');
+        const tileUrl = currentTheme === 'light'
+          ? 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png'
+          : 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png';
+
+        tileLayerRef.current = L.tileLayer(tileUrl, {
           attribution: '&copy; OpenStreetMap contributors &copy; CARTO',
           subdomains: 'abcd',
           maxZoom: 20
@@ -221,7 +256,7 @@ export function MapContainer({
 
         const stopMarker = L.marker([stop.stop_lat, stop.stop_lon], { icon: stopIcon })
           .addTo(map)
-          .bindPopup(`<b>${stop.stop_name}</b><br/>Координаты: ${stop.stop_lat.toFixed(5)}, ${stop.stop_lon.toFixed(5)}`);
+          .bindPopup(`<b>${stop.stop_name}</b><br/>Координаталар: ${stop.stop_lat.toFixed(5)}, ${stop.stop_lon.toFixed(5)}`);
 
         if (onSelectStop) {
           stopMarker.on('click', () => onSelectStop(stop));
@@ -274,6 +309,7 @@ export function MapContainer({
               <p style="font-size: 10px; color: #d1d5db; line-height: 1.35; margin: 4px 0 6px 0;">${pin.description}</p>
               <div style="padding: 4px 8px; background: rgba(245,158,11,0.15); border: 1px dashed #f59e0b; border-radius: 6px; text-align: center; font-family: monospace; font-size: 11px; font-weight: 900; color: #fbbf24;">
                 Купон: ${pin.coupon_code}
+
               </div>
             </div>
           `);
@@ -298,12 +334,8 @@ export function MapContainer({
         if (v.congestion_status === 'normal') color = '#f59e0b';
         if (v.congestion_status === 'crowded') color = '#ef4444';
 
-        const isOutdoor = document.documentElement.getAttribute('data-theme') === 'outdoor';
-        const markerBorder = isOutdoor ? 'border-3 border-black' : 'border-2 border-white';
-        const markerRadius = isOutdoor ? 'rounded-none' : 'rounded-full';
-
         const vehicleHtml = `
-          <div class="custom-vehicle-marker flex items-center justify-center w-9 h-9 ${markerRadius} ${markerBorder} shadow-lg" style="background-color: ${color}; transform: rotate(${v.bearing || 0}deg);">
+          <div class="custom-vehicle-marker flex items-center justify-center w-9 h-9 rounded-full border-2 border-white shadow-lg" style="background-color: ${color}; transform: rotate(${v.bearing || 0}deg);">
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="text-white"><path d="m12 19-7-7 7-7M5 12h14"/></svg>
           </div>
         `;
@@ -358,10 +390,10 @@ export function MapContainer({
           // Обновляем текст попапа
           marker.getPopup().setContent(`
             <div style="font-family: sans-serif; padding: 4px 8px;">
-              <b style="font-size: 14px;">Маршрутка №${v.route_short_name || '105'}</b><br/>
-              <b>Загруженность:</b> ${v.congestion_status === 'empty' ? '🟢 Свободно' : v.congestion_status === 'normal' ? '🟡 Нормально' : '🔴 Толпа'}<br/>
-              <b>Скорость:</b> ${v.speed || 0} км/ч<br/>
-              <span style="font-size: 10px; color: #888;">Обновлено: ${new Date(v.last_updated).toLocaleTimeString()}</span>
+              <b style="font-size: 14px;">Маршрут №${v.route_short_name || '105'}</b><br/>
+              <b>Толумдук:</b> ${v.congestion_status === 'empty' ? '🟢 Бош' : v.congestion_status === 'normal' ? '🟡 Орточо' : '🔴 Толгон'}<br/>
+              <b>Ылдамдык:</b> ${v.speed || 0} км/саат<br/>
+              <span style="font-size: 10px; color: #888;">Жаңыртылды: ${new Date(v.last_updated).toLocaleTimeString()}</span>
             </div>
           `);
         } else {
@@ -400,7 +432,7 @@ export function MapContainer({
             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
             <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
           </span>
-          {mapType === 'mapbox' ? '🟢 MAPBOX 3D ENGINE' : '🔵 LEAFLET + OSM REALTIME'}
+          {mapType === 'mapbox' ? 'MAPBOX 3D' : 'LEAFLET • OSM'}
         </div>
       </div>
     </div>
