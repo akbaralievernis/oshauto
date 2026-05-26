@@ -49,7 +49,8 @@ import {
   HelpCircle,
   Eye,
   EyeOff,
-  Lightbulb
+  Lightbulb,
+  Undo2
 } from 'lucide-react';
 import Link from 'next/link';
 
@@ -260,6 +261,11 @@ function AdminPageContent() {
   // мобильный оверлей карты
   const [showMapOverlay, setShowMapOverlay] = useState(false);
 
+  // стек отмены кликов по карте (stack of stop_ids в порядке добавления)
+  const [mapClickUndoStack, setMapClickUndoStack] = useState<string[]>([]);
+  // время последнего добавления — для всплывающего snackbar'a
+  const [lastMapAddedAt, setLastMapAddedAt] = useState<number | null>(null);
+
   // ручной ввод
   const [manualName, setManualName] = useState('');
   const [manualLat, setManualLat] = useState('');
@@ -277,10 +283,50 @@ function AdminPageContent() {
   const tileLayerRef = useRef<any>(null);
   const markersRef = useRef<any[]>([]);
   const polylineRef = useRef<any>(null);
+  // Свежий addMode для замыкания обработчика клика по карте
+  const addModeRef = useRef<'map' | 'manual' | 'bulk'>('map');
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 8 } })
   );
+
+  // держим ref на актуальный addMode (замыкание handler'а карты иначе застрянет на 'map')
+  useEffect(() => {
+    addModeRef.current = addMode;
+  }, [addMode]);
+
+  // автоскрытие snackbar'a через 4 секунды
+  useEffect(() => {
+    if (lastMapAddedAt === null) return;
+    const t = setTimeout(() => setLastMapAddedAt(null), 4000);
+    return () => clearTimeout(t);
+  }, [lastMapAddedAt]);
+
+  // отмена последнего клика по карте
+  const undoLastMapClick = () => {
+    setMapClickUndoStack((prev) => {
+      if (prev.length === 0) return prev;
+      const last = prev[prev.length - 1];
+      setStops((s) => s.filter((stop) => stop.stop_id !== last));
+      return prev.slice(0, -1);
+    });
+    setLastMapAddedAt(null);
+  };
+
+  // Ctrl/Cmd + Z для отмены
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      const isUndo = (e.ctrlKey || e.metaKey) && !e.shiftKey && e.key.toLowerCase() === 'z';
+      if (!isUndo) return;
+      // не перехватываем ввод в полях
+      const tag = (e.target as HTMLElement)?.tagName;
+      if (tag === 'INPUT' || tag === 'TEXTAREA') return;
+      e.preventDefault();
+      undoLastMapClick();
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, []);
 
   // ----- инициализация
   useEffect(() => {
@@ -357,7 +403,7 @@ function AdminPageContent() {
       leafletMapRef.current = map;
 
       map.on('click', (e: any) => {
-        if (addMode !== 'map') return;
+        if (addModeRef.current !== 'map') return;
         const { lat, lng } = e.latlng;
         const newStopId = `stop_${Date.now()}_${Math.floor(Math.random() * 1000)}`;
         setStops((prev) => [
@@ -369,6 +415,8 @@ function AdminPageContent() {
             stop_lon: lng
           }
         ]);
+        setMapClickUndoStack((prev) => [...prev, newStopId]);
+        setLastMapAddedAt(Date.now());
       });
     });
 
@@ -463,6 +511,7 @@ function AdminPageContent() {
   // ----- остановки
   const handleRemoveStop = (id: string) => {
     setStops((prev) => prev.filter((s) => s.stop_id !== id));
+    setMapClickUndoStack((prev) => prev.filter((x) => x !== id));
   };
   const handleRenameStop = (id: string, newName: string) => {
     setStops((prev) => prev.map((s) => (s.stop_id === id ? { ...s, stop_name: newName } : s)));
@@ -1015,7 +1064,11 @@ function AdminPageContent() {
               </span>
               {stops.length > 0 && (
                 <button
-                  onClick={() => setStops([])}
+                  onClick={() => {
+                    setStops([]);
+                    setMapClickUndoStack([]);
+                    setLastMapAddedAt(null);
+                  }}
                   className="text-[11px] font-bold text-red-500 hover:text-red-400 cursor-pointer"
                 >
                   Бардыгын тазалоо
@@ -1123,12 +1176,50 @@ function AdminPageContent() {
           </div>
         )}
 
-        {/* Хинт-панель в режиме картинки */}
+        {/* Хинт-панель + кнопка Артка (отмена клика) */}
         {addMode === 'map' && (
-          <div className="absolute top-4 right-4 z-10 pointer-events-none">
+          <div className="absolute top-4 right-4 z-10 flex flex-col items-end gap-2 pointer-events-none">
             <div className="px-3 py-2 rounded-xl glass-panel border border-blue-500/30 pointer-events-auto flex items-center gap-2 shadow-2xl select-none text-xs font-bold text-blue-600 dark:text-blue-300 max-w-xs">
               <MousePointerClick className="w-4 h-4 shrink-0" />
               Аялдама кошуу үчүн картаны басыңыз
+            </div>
+            {mapClickUndoStack.length > 0 && (
+              <button
+                onClick={undoLastMapClick}
+                title="Акыркы кошкон аялдаманы жокко чыгаруу (Ctrl+Z)"
+                className="pointer-events-auto px-3.5 py-2 rounded-xl glass-panel border border-[var(--border-color)] hover:border-[var(--border-hover)] flex items-center gap-2 shadow-2xl text-xs font-bold text-[var(--text-primary)] cursor-pointer transition-all active:scale-95"
+              >
+                <Undo2 className="w-4 h-4" />
+                Артка
+                <span className="text-[10px] text-[var(--text-muted)] font-mono ml-1 hidden sm:inline">
+                  Ctrl+Z
+                </span>
+                <span className="ml-1 px-1.5 py-0.5 rounded-md bg-[var(--accent-glow)] text-[var(--accent)] text-[10px] font-extrabold">
+                  {mapClickUndoStack.length}
+                </span>
+              </button>
+            )}
+          </div>
+        )}
+
+        {/* Snackbar — всплывает на 4 сек после клика */}
+        {lastMapAddedAt !== null && addMode === 'map' && (
+          <div
+            key={lastMapAddedAt}
+            className="absolute bottom-6 left-1/2 -translate-x-1/2 z-20 pointer-events-none animate-fadeUp"
+          >
+            <div className="pointer-events-auto flex items-center gap-3 px-4 py-2.5 rounded-2xl bg-[var(--bg-solid)] border border-[var(--border-color)] shadow-2xl">
+              <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
+              <span className="text-xs font-bold text-[var(--text-primary)]">
+                Аялдама кошулду
+              </span>
+              <button
+                onClick={undoLastMapClick}
+                className="px-2.5 py-1 rounded-lg text-xs font-extrabold text-[var(--accent)] hover:bg-[var(--accent-glow)] cursor-pointer flex items-center gap-1 transition-colors"
+              >
+                <Undo2 className="w-3.5 h-3.5" />
+                Артка
+              </button>
             </div>
           </div>
         )}
