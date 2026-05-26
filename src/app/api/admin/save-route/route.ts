@@ -132,16 +132,23 @@ export async function POST(request: Request) {
     }
 
     return NextResponse.json({ ok: true });
-  } catch (err: unknown) {
-    const message = err instanceof Error ? err.message : String(err);
+  } catch (err: any) {
+    let message = 'Unknown error';
+    if (err instanceof Error) {
+      message = err.message;
+    } else if (err && typeof err === 'object' && 'message' in err) {
+      message = String(err.message);
+    } else {
+      message = String(err);
+    }
     console.error('[save-route] Supabase error:', message);
 
     const keyInfo = serviceKey
       ? `${serviceKey.substring(0, 15)}... (length: ${serviceKey.length})`
       : 'undefined';
 
-    const diagMessage = message.includes('row-level security policy')
-      ? `${message}\n\n[ДИАГНОСТИКА] Сервер колдонуп жаткан ачкыч: ${keyInfo}.\nЭгер бул жерде "sb_publishable_..." деп турса, анда сервер эски ачкычты колдонуп жатат. Терминалды толугу менен жаап (же Ctrl+C басып), кайра "npm run dev" деп иштетиңиз.`
+    const diagMessage = message.includes('row-level security policy') || message.includes('security')
+      ? `${message}\n\n[ДИАГНОСТИКА] Сервер колдонуп жаткан ачкыч: ${keyInfo}.\nЭгер бул жерде "sb_publishable_..." же башка туура эмес ачкыч турса, Vercel-деги өзгөрмөлөрдү текшериңиз.`
       : message;
 
     return NextResponse.json({ error: diagMessage }, { status: 500 });
