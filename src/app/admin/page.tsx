@@ -702,10 +702,10 @@ function AdminPageContent() {
 
   return (
     <div className="w-screen h-[100dvh] overflow-hidden flex flex-col lg:flex-row">
-      {/* ЛЕВАЯ ПАНЕЛЬ */}
-      <div className="w-full lg:w-[440px] shrink-0 lg:border-r border-[var(--border-color)] bg-[var(--bg-solid)] flex flex-col h-full min-h-0 z-10 shadow-2xl">
-        {/* Шапка */}
-        <div className="px-4 py-3 border-b border-[var(--border-color)] flex items-center justify-between">
+      {/* ЛЕВАЯ ПАНЕЛЬ — обычный вертикальный скролл, без вложенных flex-трюков */}
+      <div className="w-full lg:w-[440px] shrink-0 lg:border-r border-[var(--border-color)] bg-[var(--bg-solid)] h-full overflow-y-auto overflow-x-hidden relative z-10 shadow-2xl">
+        {/* Шапка — sticky сверху */}
+        <div className="sticky top-0 z-20 bg-[var(--bg-solid)] px-4 py-3 border-b border-[var(--border-color)] flex items-center justify-between">
           <Link
             href="/"
             className="flex items-center gap-1.5 text-xs font-bold text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
@@ -723,7 +723,7 @@ function AdminPageContent() {
         </div>
 
         {/* Title */}
-        <div className="px-4 py-3 border-b border-[var(--border-color)] flex items-center justify-between gap-3">
+        <div className="bg-[var(--bg-solid)] px-4 py-3 border-b border-[var(--border-color)] flex items-center justify-between gap-3">
           <div>
             <div className="text-base font-extrabold tracking-tight">Маршрут куроо</div>
             <div className="text-[11px] text-[var(--text-muted)]">
@@ -757,7 +757,7 @@ function AdminPageContent() {
         </div>
 
         {/* Прогресс-индикатор */}
-        <div className="px-4 py-3 border-b border-[var(--border-color)] flex items-center gap-2">
+        <div className="bg-[var(--bg-solid)] px-4 py-3 border-b border-[var(--border-color)] flex items-center gap-2">
           <ProgressDot done={step1Done} label="Маалымат" />
           <div className="flex-1 h-0.5 bg-[var(--border-color)]" />
           <ProgressDot done={step2Done} label="Аялдамалар" />
@@ -765,8 +765,8 @@ function AdminPageContent() {
           <ProgressDot done={false} label="Сактоо" />
         </div>
 
-        {/* Контент */}
-        <div className="flex-1 min-h-0 overflow-y-auto p-4 flex flex-col gap-3">
+        {/* Контент — обычный поток, скроллится с панелью */}
+        <div className="p-4 pb-32 flex flex-col gap-3">
           {/* Гид */}
           {showGuide && (
             <div className="relative rounded-2xl border border-blue-500/30 bg-gradient-to-br from-blue-500/10 to-indigo-500/5 p-4">
@@ -1049,8 +1049,8 @@ function AdminPageContent() {
           </Section>
         </div>
 
-        {/* Сохранение */}
-        <div className="p-4 border-t border-[var(--border-color)] bg-[var(--background)]">
+        {/* Сохранение — sticky внизу */}
+        <div className="sticky bottom-0 z-20 p-4 border-t border-[var(--border-color)] bg-[var(--bg-solid)] backdrop-blur-sm">
           <button
             onClick={handleSaveRoute}
             disabled={isSaving}
