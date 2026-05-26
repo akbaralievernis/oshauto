@@ -43,6 +43,7 @@ import {
   MousePointerClick,
   Hash,
   Clock,
+  Map as MapIcon,
   Route as RouteIcon,
   LogOut,
   HelpCircle,
@@ -256,6 +257,9 @@ function AdminPageContent() {
   // вкладки добавления остановок
   const [addMode, setAddMode] = useState<'map' | 'manual' | 'bulk'>('map');
 
+  // мобильный оверлей карты
+  const [showMapOverlay, setShowMapOverlay] = useState(false);
+
   // ручной ввод
   const [manualName, setManualName] = useState('');
   const [manualLat, setManualLat] = useState('');
@@ -375,6 +379,22 @@ function AdminPageContent() {
       }
     };
   }, [isClient]);
+
+  // ----- ресайз карты при открытии/закрытии оверлея и при ресайзе окна
+  useEffect(() => {
+    const map = leafletMapRef.current;
+    if (!map) return;
+    // Двойной requestAnimationFrame — чтобы layout успел обновиться.
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => map.invalidateSize?.());
+    });
+  }, [showMapOverlay]);
+
+  useEffect(() => {
+    const onResize = () => leafletMapRef.current?.invalidateSize?.();
+    window.addEventListener('resize', onResize);
+    return () => window.removeEventListener('resize', onResize);
+  }, []);
 
   // ----- наблюдение за темой
   useEffect(() => {
@@ -681,9 +701,9 @@ function AdminPageContent() {
   const step2Done = stops.length > 0;
 
   return (
-    <div className="w-screen h-screen overflow-hidden flex">
+    <div className="w-screen h-[100dvh] overflow-hidden flex flex-col lg:flex-row">
       {/* ЛЕВАЯ ПАНЕЛЬ */}
-      <div className="w-[440px] shrink-0 border-r border-[var(--border-color)] bg-[var(--bg-solid)] flex flex-col h-full min-h-0 z-10 shadow-2xl">
+      <div className="w-full lg:w-[440px] shrink-0 lg:border-r border-[var(--border-color)] bg-[var(--bg-solid)] flex flex-col h-full min-h-0 z-10 shadow-2xl">
         {/* Шапка */}
         <div className="px-4 py-3 border-b border-[var(--border-color)] flex items-center justify-between">
           <Link
@@ -929,11 +949,21 @@ function AdminPageContent() {
             </div>
 
             {addMode === 'map' && (
-              <div className="p-3 rounded-xl border border-blue-500/30 bg-blue-500/5 text-xs text-[var(--text-secondary)] leading-relaxed flex items-start gap-2">
-                <MousePointerClick className="w-4 h-4 mt-0.5 shrink-0 text-blue-500" />
-                <span>
-                  Оң жактагы картанын каалаган жерине басыңыз — ал жерге аялдама кошулат. Алып салуу үчүн тизмедеги корзинаны басыңыз.
-                </span>
+              <div className="flex flex-col gap-2">
+                <div className="p-3 rounded-xl border border-blue-500/30 bg-blue-500/5 text-xs text-[var(--text-secondary)] leading-relaxed flex items-start gap-2">
+                  <MousePointerClick className="w-4 h-4 mt-0.5 shrink-0 text-blue-500" />
+                  <span>
+                    Картанын каалаган жерине басыңыз — ал жерге аялдама кошулат. Алып салуу үчүн тизмедеги корзинаны басыңыз.
+                  </span>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setShowMapOverlay(true)}
+                  className="lg:hidden w-full py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-sm font-bold flex items-center justify-center gap-2 cursor-pointer"
+                >
+                  <MapIcon className="w-4 h-4" />
+                  Картаны ачуу
+                </button>
               </div>
             )}
 
@@ -1035,9 +1065,39 @@ function AdminPageContent() {
         </div>
       </div>
 
-      {/* ПРАВАЯ ЧАСТЬ: КАРТА */}
-      <div className="flex-1 h-full relative">
+      {/* ПРАВАЯ ЧАСТЬ: КАРТА.
+          Контейнер всегда смонтирован, чтобы Leaflet не терял ссылку.
+          На мобиле невидим до тех пор, пока не открыт оверлей. */}
+      <div
+        className={
+          showMapOverlay
+            ? 'fixed inset-0 z-[900]'
+            : 'lg:flex-1 lg:h-full lg:relative lg:visible lg:w-auto lg:overflow-visible lg:pointer-events-auto fixed top-0 left-0 w-px h-px overflow-hidden invisible pointer-events-none'
+        }
+      >
         <div ref={mapContainerRef} className="w-full h-full absolute inset-0" />
+
+        {/* Кнопка закрыть оверлей — только мобильный */}
+        {showMapOverlay && (
+          <button
+            onClick={() => setShowMapOverlay(false)}
+            className="lg:hidden absolute top-4 left-4 z-[920] px-4 py-2.5 rounded-xl bg-[var(--bg-solid)] border border-[var(--border-color)] text-sm font-bold text-[var(--text-primary)] shadow-2xl flex items-center gap-2 cursor-pointer"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            Кайтуу
+          </button>
+        )}
+
+        {/* Готово — только мобильный, чтобы вернуться к форме */}
+        {showMapOverlay && (
+          <button
+            onClick={() => setShowMapOverlay(false)}
+            className="lg:hidden absolute bottom-5 left-1/2 -translate-x-1/2 z-[920] px-6 py-3 rounded-2xl bg-gradient-to-r from-blue-600 to-indigo-600 text-white text-sm font-bold shadow-2xl shadow-blue-600/40 flex items-center gap-2 cursor-pointer"
+          >
+            <CheckCircle2 className="w-4 h-4" />
+            Аялдамаларды бүтүрүү ({stops.length})
+          </button>
+        )}
 
         {/* Превью маршрута сверху */}
         {(routeShortName || stops.length > 0) && (
