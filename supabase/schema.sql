@@ -167,15 +167,33 @@ begin
 end;
 $$ language plpgsql;
 
+-- Функция авто-заполнения geom для остановок (stops)
+create or replace function update_stops_geom()
+returns trigger as $$
+begin
+    new.geom := ST_SetSRID(ST_MakePoint(new.stop_lon, new.stop_lat), 4326);
+    return new;
+end;
+$$ language plpgsql;
+
+-- Функция авто-заполнения geom для путей (shapes)
+create or replace function update_shapes_geom()
+returns trigger as $$
+begin
+    new.geom := ST_SetSRID(ST_MakePoint(new.shape_pt_lon, new.shape_pt_lat), 4326);
+    return new;
+end;
+$$ language plpgsql;
+
 -- Триггер для авто-заполнения geom для остановок
 create trigger trg_stops_geom
 before insert or update of stop_lat, stop_lon on stops
-for each row execute function update_geom_from_latlon();
+for each row execute function update_stops_geom();
 
 -- Триггер для авто-заполнения geom для shapes
 create trigger trg_shapes_geom
 before insert or update of shape_pt_lat, shape_pt_lon on shapes
-for each row execute function update_geom_from_latlon();
+for each row execute function update_shapes_geom();
 
 -- Триггер для авто-заполнения geom для позиций машин
 create trigger trg_vehicle_geom
