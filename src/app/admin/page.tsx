@@ -649,10 +649,45 @@ function AdminPageContent() {
     }
   };
 
-  const handleDeleteSaved = (id: string) => {
+  const handleDeleteSaved = async (id: string) => {
     if (!confirm('Бул маршрутту өчүрөсүзбү? Аракет кайтарылбайт.')) return;
-    deleteCustomRoute(id);
-    setSavedRoutes(getCustomRoutes());
+
+    setIsSaving(true);
+    try {
+      deleteCustomRoute(id);
+
+      if (isClientConfigured) {
+        // Если задан NEXT_PUBLIC_ADMIN_PASSWORD — отправляем как Bearer-токен
+        const token =
+          typeof process !== 'undefined'
+            ? process.env.NEXT_PUBLIC_ADMIN_PASSWORD
+            : undefined;
+
+        const res = await fetch('/api/admin/delete-route', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            ...(token ? { Authorization: `Bearer ${token}` } : {})
+          },
+          body: JSON.stringify({ route_id: id })
+        });
+
+        if (!res.ok) {
+          const data = await res.json().catch(() => ({ error: res.statusText }));
+          throw new Error(data?.error || `HTTP ${res.status}`);
+        }
+      }
+
+      setSavedRoutes(getCustomRoutes());
+      alert('Маршрут локалдуу жана Supabase-тен ийгиликтүү өчүрүлдү!');
+    } catch (err: unknown) {
+      console.error(err);
+      const message =
+        err instanceof Error ? err.message : typeof err === 'string' ? err : 'белгисиз ката';
+      alert('Сакталган маршрутту өчүрүүдө ката кетти: ' + message);
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   const handleNewRoute = () => {
