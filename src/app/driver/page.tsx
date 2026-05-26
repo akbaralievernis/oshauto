@@ -1,13 +1,12 @@
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
-import { MOCK_ROUTES, Route } from '@/lib/supabase';
+import { MOCK_ROUTES } from '@/lib/supabase';
 import { useSupabaseRealtime } from '@/hooks/useSupabaseRealtime';
 import {
   Navigation,
   Play,
   Square,
-  AlertTriangle,
   ArrowLeft,
   Users,
   Compass,

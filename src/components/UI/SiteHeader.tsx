@@ -13,9 +13,14 @@ export function SiteHeader({ activePath = 'home' }: SiteHeaderProps) {
   const [open, setOpen] = useState(false);
   const { theme, setTheme } = useStore();
   const [mounted, setMounted] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
 
   useEffect(() => {
     setMounted(true);
+    const onScroll = () => setScrolled(window.scrollY > 10);
+    onScroll();
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
   }, []);
 
   const toggleTheme = () => {
@@ -26,7 +31,7 @@ export function SiteHeader({ activePath = 'home' }: SiteHeaderProps) {
     <Link
       href={href}
       onClick={() => setOpen(false)}
-      className={`text-sm font-semibold transition-colors px-3.5 py-2 rounded-lg ${
+      className={`text-sm font-semibold transition-all px-3.5 py-2 rounded-lg ${
         activePath === key
           ? 'text-[var(--text-primary)] bg-[var(--accent-glow)]'
           : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-elevated)]'
@@ -37,10 +42,16 @@ export function SiteHeader({ activePath = 'home' }: SiteHeaderProps) {
   );
 
   return (
-    <header className="sticky top-0 z-40 backdrop-blur-xl bg-[var(--bg-primary)] border-b border-[var(--border-color)]">
+    <header
+      className={`sticky top-0 z-40 backdrop-blur-xl border-b transition-all ${
+        scrolled
+          ? 'bg-[var(--bg-primary)] border-[var(--border-color)] shadow-[0_4px_20px_var(--shadow-color)]'
+          : 'bg-transparent border-transparent'
+      }`}
+    >
       <div className="mx-auto w-full max-w-6xl px-5 sm:px-8 h-16 flex items-center justify-between gap-4">
-        <Link href="/" className="flex items-center gap-2.5 shrink-0">
-          <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center shadow-lg shadow-blue-500/25">
+        <Link href="/" className="flex items-center gap-2.5 shrink-0 group">
+          <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center shadow-lg shadow-blue-500/30 group-hover:shadow-blue-500/50 transition-shadow">
             <Bus className="w-5 h-5 text-white" />
           </div>
           <div className="flex flex-col leading-none">
@@ -89,7 +100,7 @@ export function SiteHeader({ activePath = 'home' }: SiteHeaderProps) {
       </div>
 
       {open && (
-        <div className="md:hidden border-t border-[var(--border-color)] px-4 py-3 flex flex-col gap-1 bg-[var(--bg-solid)]">
+        <div className="md:hidden border-t border-[var(--border-color)] px-4 py-3 flex flex-col gap-1 bg-[var(--bg-solid)] animate-fadeIn">
           {link('home', '/', 'Башкы бет')}
           {link('routes', '/routes', 'Маршруттар')}
           {link('map', '/map', 'Карта')}

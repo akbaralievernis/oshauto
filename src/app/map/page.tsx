@@ -1,7 +1,7 @@
 'use client';
 
 import React, { Suspense, useEffect, useState } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { MapContainer } from '@/components/Map/MapContainer';
 import { BottomSheet } from '@/components/UI/BottomSheet';
@@ -14,7 +14,6 @@ import { getAllRoutes, getStopsForRoute } from '@/lib/customRoutes';
 import { Sun, Moon, ArrowLeft, ShieldAlert, Home } from 'lucide-react';
 
 function MapPageInner() {
-  const router = useRouter();
   const params = useSearchParams();
   const presetRouteId = params.get('route');
 

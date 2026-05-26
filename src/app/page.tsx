@@ -68,25 +68,31 @@ export default function HomePage() {
       {/* HERO */}
       <section className="relative overflow-hidden border-b border-[var(--border-color)]">
         <div className="absolute inset-0 -z-10 pointer-events-none">
-          <div className="absolute top-[-15%] left-1/2 -translate-x-1/2 w-[800px] h-[800px] rounded-full bg-gradient-to-br from-blue-500/20 via-indigo-500/10 to-transparent blur-3xl" />
-          <div className="absolute bottom-[-20%] right-[-10%] w-[500px] h-[500px] rounded-full bg-emerald-500/15 blur-3xl" />
+          <div className="absolute top-[-20%] left-1/2 -translate-x-1/2 w-[900px] h-[900px] rounded-full bg-gradient-to-br from-blue-500/25 via-indigo-500/12 to-transparent blur-3xl" />
+          <div className="absolute bottom-[-25%] right-[-10%] w-[600px] h-[600px] rounded-full bg-emerald-500/18 blur-3xl" />
+          <div className="absolute top-1/3 left-[-15%] w-[400px] h-[400px] rounded-full bg-purple-500/10 blur-3xl" />
         </div>
 
-        <div className="mx-auto w-full max-w-6xl px-5 sm:px-8 pt-16 pb-14 md:pt-24 md:pb-20">
-          <div className="mx-auto max-w-3xl flex flex-col items-center text-center gap-6">
-            <span className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full border border-[var(--accent)]/30 bg-[var(--accent-glow)] text-xs font-semibold text-[var(--accent-strong)]">
-              <Sparkles className="w-3.5 h-3.5" />
+        <div className="mx-auto w-full max-w-6xl px-5 sm:px-8 pt-14 pb-16 md:pt-24 md:pb-24">
+          <div className="mx-auto max-w-3xl flex flex-col items-center text-center gap-6 animate-fadeUp">
+            <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-[var(--accent)]/30 bg-[var(--accent-glow)] text-xs font-semibold text-[var(--accent-strong)] backdrop-blur-md">
+              <span className="flex h-2 w-2 relative">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
+              </span>
               Ош транспорту реалдуу убакытта
+              <Sparkles className="w-3.5 h-3.5" />
             </span>
 
-            <h1 className="text-[2.25rem] sm:text-5xl md:text-6xl font-black tracking-tight leading-[1.05] text-balance">
+            <h1 className="text-[2.5rem] sm:text-6xl md:text-7xl font-black tracking-tight leading-[1.02] text-balance">
               Жетер жайыңызга{' '}
               <span className="bg-gradient-to-r from-blue-500 via-indigo-500 to-emerald-500 bg-clip-text text-transparent">
-                тез жана так барыңыз
+                тез жана так
               </span>
+              {' '}барыңыз
             </h1>
 
-            <p className="text-base md:text-lg text-[var(--text-secondary)] max-w-xl leading-relaxed">
+            <p className="text-base md:text-xl text-[var(--text-secondary)] max-w-2xl leading-relaxed">
               Шаардык автобустардын маршруттары, аялдамалары жана транспорттун кыймылы — бир ыңгайлуу жана заманбап кызматта.
             </p>
 
@@ -137,8 +143,8 @@ export default function HomePage() {
       </section>
 
       {/* TWO ACTION CARDS */}
-      <section className="mx-auto w-full max-w-6xl px-5 sm:px-8 -mt-8 md:-mt-10 relative z-10">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-5">
+      <section className="mx-auto w-full max-w-6xl px-5 sm:px-8 -mt-10 md:-mt-14 relative z-10">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-5 animate-fadeUp" style={{ animationDelay: '120ms', animationFillMode: 'both' }}>
           <ActionCard
             icon={<RouteIcon className="w-6 h-6" />}
             tone="blue"

@@ -42,10 +42,8 @@ import {
   CheckCircle2,
   MousePointerClick,
   Hash,
-  Palette,
   Clock,
   Route as RouteIcon,
-  Sparkles,
   LogOut,
   HelpCircle,
   Eye,
@@ -237,7 +235,7 @@ function FieldLabel({ children, hint }: { children: React.ReactNode; hint?: stri
 // АДМИН-ПАНЕЛЬ
 // =============================================================
 function AdminPageContent() {
-  const [routeId, setRouteId] = useState<string>(`route_${Date.now()}`);
+  const [routeId, setRouteId] = useState<string>(() => `route_${Date.now()}`);
   const [routeShortName, setRouteShortName] = useState<string>('');
   const [routeLongName, setRouteLongName] = useState<string>('');
   const [routeColor, setRouteColor] = useState<string>('3b82f6');

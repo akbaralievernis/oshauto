@@ -186,7 +186,7 @@ export function RouteCard({ route, stops, onSelectStop, onUpdateCongestion }: Ro
             style={{ backgroundColor: `#${route.route_color}` }}
           />
 
-          {stops.map((stop, idx) => {
+          {stops.map((stop) => {
             const isAlarmSet = activeAlarmStopId === stop.stop_id;
             
             return (

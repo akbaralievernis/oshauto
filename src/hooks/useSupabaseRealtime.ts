@@ -14,11 +14,9 @@ export function useSupabaseRealtime(selectedRouteShortName: string | null) {
       
       // Первоначальный запрос текущих координат
       const fetchInitialLocations = async () => {
-        let query = supabase
+        const { data, error } = await supabase
           .from('vehicle_locations')
           .select('vehicle_id, latitude, longitude, bearing, speed, congestion_status, last_updated, trips(routes(route_short_name))');
-        
-        const { data, error } = await query;
         if (!error && data) {
           const formatted: VehicleLocation[] = data.map((v: any) => ({
             vehicle_id: v.vehicle_id,
