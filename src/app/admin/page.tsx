@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
-import { supabase, isClientConfigured, Route, Stop } from '@/lib/supabase';
+import { isClientConfigured, Route, Stop } from '@/lib/supabase';
 import {
   getCustomRoutes,
   saveCustomRoute,
@@ -705,35 +705,48 @@ function AdminPageContent() {
       setSavedRoutes(getCustomRoutes());
 
       if (isClientConfigured) {
-        const { error: routeErr } = await supabase.from('routes').upsert(routeData);
-        if (routeErr) throw routeErr;
-
-        const stopsToInsert = stops.map((s) => ({
+        // Запись в Supabase идёт через server API, чтобы использовать service-role
+        // ключ и обойти RLS, не выставляя ключ наружу.
+        const stopsPayload = stops.map((s) => ({
           stop_id: s.stop_id,
           stop_name: s.stop_name,
           stop_lat: s.stop_lat,
           stop_lon: s.stop_lon
         }));
-        const { error: stopsErr } = await supabase.from('stops').upsert(stopsToInsert);
-        if (stopsErr) throw stopsErr;
 
-        const tripId = `trip_${routeId}`;
-        const { error: tripErr } = await supabase.from('trips').upsert({
-          trip_id: tripId,
-          route_id: routeId,
-          service_id: 'daily',
-          trip_headsign: stops[stops.length - 1].stop_name,
-          direction_id: 0
+        // Если задан NEXT_PUBLIC_ADMIN_PASSWORD — отправляем как Bearer-токен
+        const token =
+          typeof process !== 'undefined'
+            ? process.env.NEXT_PUBLIC_ADMIN_PASSWORD
+            : undefined;
+
+        const res = await fetch('/api/admin/save-route', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            ...(token ? { Authorization: `Bearer ${token}` } : {})
+          },
+          body: JSON.stringify({ route: routeData, stops: stopsPayload })
         });
-        if (tripErr) throw tripErr;
+
+        if (!res.ok) {
+          const data = await res.json().catch(() => ({ error: res.statusText }));
+          throw new Error(data?.error || `HTTP ${res.status}`);
+        }
 
         alert('Маршрут локалдуу жана Supabase-та сакталды!');
       } else {
         alert(`"${routeShortName}" маршруту сакталды жана сайтта пайда болду.`);
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error(err);
-      alert('Маршрут локалдуу сакталды, бирок Supabase-ке жөнөтүүдө ката болду: ' + (err?.message || ''));
+      const message =
+        err instanceof Error ? err.message : typeof err === 'string' ? err : 'белгисиз ката';
+      alert(
+        'Маршрут локалдуу сакталды, бирок Supabase-ке жөнөтүүдө ката болду:\n\n' +
+          message +
+          '\n\nSupabase-те жазуу укугу үчүн серверге SUPABASE_SERVICE_ROLE_KEY коюлганын текшериңиз (RLS саясатын айланып өтүү үчүн).'
+      );
     } finally {
       setIsSaving(false);
     }
